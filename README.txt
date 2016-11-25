@@ -14,6 +14,8 @@ int main()
 		scatter;
 		
 		connect;
+
+		
 	
 	}
 }
@@ -78,4 +80,29 @@ void connect()
 		Vlinki[index_flip]=0;
 
 		Vstub[index_flip]=0;
+}
+
+//Excite source edge with Vsource at specific time step; add source effect
+//Calculate total admittance at the edge and add up linkline and stub voltages
+void edge_excite(vector<mesh_edge> &mesh_edges, vector<int> &source_edge, double Vsource)
+{
+	int no_source_edge(source_edge.sizeof());
+
+	for(int sei=0;sei<no_source_edge;++sei){
+		
+		int source_edge_index(source_edge[sei]);
+
+		int source_edge_flip(mesh_edges[source_edge_index].flip);
+
+		double Ytotal(mesh_edges[source_edge_index].Ylink+mesh_edges[source_edge_index].Ystub);
+
+		if(source_edge_flip!=0){
+
+			Ytotal+=mesh_edges[source_edge_flip].Ylink+mesh_edges[source_edge_flip].Ystub;
+		}
+
+		mesh_edges[source_edge_index].Vlinki+=Vsource/Ytotal;
+		mesh_edges[source_edge_index].Vstub+=Vsource/Ytotal;
+
+
 }

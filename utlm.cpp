@@ -38,7 +38,7 @@ class mesh_edge{
 
 };
 
-class
+
 int main(int argc, char* argv[])
 {
     cout<<"Hello World!"<<endl;
@@ -70,7 +70,7 @@ void scatter(const int &time_step, vector<mesh_edge> &mesh_edges, vector<mesh_fa
 	memset(&nodeVoltage[0],0,sizeof(double)*no_face);
 
     for(int kface=0;kface<no_face;++kface){
-        
+
         nodeCurrent[kface]=2*(mesh_edges[kface*3+0].Vlinki*mesh_edges[kface*3+0].Ylink+mesh_edges[kface*3+1].Vlinki*mesh_edges[kface*3+1].Ylink+mesh_edges[kface*3+2].Vlinki*mesh_edges[kface*3+2].Ylink);
         nodeVoltage[kface]=nodeCurrent[kface]*mesh_body[kface].Z0;
 
@@ -131,8 +131,9 @@ void connect(const int &time_step, vector<mesh_edge> &mesh_edges, vector<mesh_fa
             double Istub_flip(mesh_edges[flip_edge_index].Vstub*mesh_edges[flip_edge_index].Ystub);
 
             double Iconnect(2*(Ilinkr+Ilinkr_flip+Istub+Istub_flip));
-
-            double Ytotal(mesh_edges[internal_edge_index].Ylink+mesh_edges[internal_edge_index].Ystub+mesh_edges[flip_edge_index].Ylink+mesh_edges[flip_edge_index].Ystub);
+            double Ylink(mesh_edges[internal_edge_index].Ylink+mesh_edges[flip_edge_index].Ylink);
+            double Ystub(mesh_edges[internal_edge_index].Ystub+mesh_edges[flip_edge_index].Ystub);
+            double Ytotal(Ylink+Ystub);
 
             mesh_edges[internal_edge_index].Vlinki=Iconnect/Ytotal-mesh_edges[internal_edge_index].Vlinkr;
             mesh_edges[internal_edge_index].Vstub=Iconnect/Ytotal-mesh_edges[internal_edge_index].Vstub;
