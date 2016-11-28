@@ -1,8 +1,55 @@
 Read Mesh -> set material property; set boundary; calculate admittance ->
 -> set excitation -> Run TLM;
 
-Load Mesh: construct halfedges object
+Read & load mesh:
+	filetype: node, ele;
+	node file format:
+		vertices, boundary marker;
+	element file format:
+		vertex index for each face;
 
+Convert to halfedge mesh:
+	parameters:
+		vertices (mesh point vertices coordinate);
+		material boundaries;
+		mesh_boundary (boundary edge indices generated);
+		mesh_body (inner body edge indices generated);
+		face(vertice indices for each face, face number, area);
+		halfedge(face indices, vertices indices, flip edge 
+				indices, circumcenter coordinate, midpoint coordinate,
+				edgelength,linklength, Vlinki, Vlinkr, Vstub);
+		
+		no_faces;
+		nVpf(number of vertice per face);
+		triangulation;
+		create_half_edge_function;
+		setLength_function;
+		find_boundary_edge_function;	
+
+	create_half_edge function:
+		for(int inF=0;inF<nF;++inF){
+			for(int i_nVpf=0;i_nVpf<nVpf;++i_nVpf)
+			{
+				v2=(i_nVpf+1)%nVpf; //needs validate
+				start_vertex_index=face[inF].vertice[i_nVpf];
+				end_vertex_index=face[inF].vertice[v2];
+
+				half_edge_index=(inF-1)*nVpf+i_nVpf;
+				halfedge_vec[half_edge_index].vertice[0]=start_vertex_index;
+				halfedge_vec[half_edge_index].vertice[1]=end_vertex_index;
+
+				for(int iFe=0;iFe<half_edge_index;++iFe){
+					flip_edge_vertice[0]=end_vertex_index;
+					flip_edge_vertice[1]=start_vertex_index;
+					
+					if(halfedge_vec[iFe].vertice[0]=flip_edge_vertice[1]
+						&&halfedge_vec[iFe].vertice[1]=flip_edge_vertice[0]){
+							halfedge_vec[half_edge_index].flip=iFe;
+							halfedge_vec[iFe].flip=half_edge_index;
+						}
+				}
+			}
+		}
 
 
 
