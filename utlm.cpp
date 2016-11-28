@@ -146,7 +146,8 @@ void connect(const int &time_step, vector<mesh_edge> &mesh_edges, vector<mesh_fa
 
 void edge_excite(vector<mesh_edge> &mesh_edges, 
                 const vector<int> &source_edge,
-                const double &Vsource){
+                const double &Vsource)
+{
 
     int no_source_edge(source_edge.size());
 
@@ -161,8 +162,9 @@ void edge_excite(vector<mesh_edge> &mesh_edges,
 		if(source_edge_flip!=0){
 
 			Ytotal+=mesh_edges[source_edge_flip].Ylink+mesh_edges[source_edge_flip].Ystub;
-	}
+	    }
 
 		mesh_edges[source_edge_index].Vlinki+=Vsource/Ytotal;
 		mesh_edges[source_edge_index].Vstub+=Vsource/Ytotal;
+    }
 }

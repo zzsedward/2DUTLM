@@ -1,8 +1,14 @@
+Read Mesh -> set material property; set boundary; calculate admittance ->
+-> set excitation -> Run TLM;
+
+Load Mesh: construct halfedges object
+
+
+
+
+
+
 vector<mesh> mesh_obj;
-
-
-
-
 
 int main()
 {
@@ -15,7 +21,7 @@ int main()
 		
 		connect;
 
-		
+		edge_Excite;
 	
 	}
 }
