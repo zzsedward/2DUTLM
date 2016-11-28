@@ -86,7 +86,7 @@ void connect()
 //Calculate total admittance at the edge and add up linkline and stub voltages
 void edge_excite(vector<mesh_edge> &mesh_edges, vector<int> &source_edge, double Vsource)
 {
-	int no_source_edge(source_edge.sizeof());
+	int no_source_edge(source_edge.size());
 
 	for(int sei=0;sei<no_source_edge;++sei){
 		
