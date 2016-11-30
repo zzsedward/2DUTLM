@@ -26,7 +26,7 @@ Convert to halfedge mesh:
 		setLength_function;
 		find_boundary_edge_function;	
 
-	create_half_edge function:
+	//create_half_edge function:
 		for(int inF=0;inF<nF;++inF){
 			for(int i_nVpf=0;i_nVpf<nVpf;++i_nVpf)
 			{
@@ -46,17 +46,61 @@ Convert to halfedge mesh:
 						&&halfedge_vec[iFe].vertice[1]=flip_edge_vertice[0]){
 							halfedge_vec[half_edge_index].flip=iFe;
 							halfedge_vec[iFe].flip=half_edge_index;
-						}
+					}
 				}
 			}
 		}
 
-	find_boundary_edge_function:
+	//find circumcenter
+	vertice a(x1,y1), b(x2,y2), c(x3,y3);
+	d=2*(x1*(y2-y3)+x2*(y3-y1)+x3*(y1-y2));
+
+	cc.x=((x1*x1+y1*y1)(y2-y3)+(x2*x2+y2*y2)(y3-y1)+(x3*x3+y3*y3)(y1-y2))/d;
+	cc.y=((x1*x1+y1*y1)(x3-x2)+(x2*x2+y2*y2)(x1-x3)+(x3*x3+y3*y3)(x2-x1))/d;
+	//find_boundary_edge_function:
+	//find boundary edge when flip edge=-1;
 		
+		vector<int> boundary_edge_vec;
+		for(int iHe=0;iHe<no_half_edges;iHe++){
+			if(halfedge_vec[iHe].flip==-1){
+				boundary_edge_vec.push_back(iHe);
+			}
+			
+	
+	//find edge length and link length
+	for(int iHe=0;iHe<no_half_edges;iHe++){
+		vertex_index1=halfedge_vec[iHe].vertice[0];
+		vertex_index2=halfedge_vec[iHe].vertice[1];
+		
+		vertex11=mesh_vertice[vertex_index1].vertex[0];
+		vertex12=mesh_vertice[vertex_index1].vertex[1];
+		vertex21=mesh_vertice[vertex_index2].vertex[0];
+		vertex22=mesh_vertice[vertex_index2].vertex[1];
+		
+		edge_length=sqrt((vertex11-vertex21)^2+(vertex12-vertex22)^2);
+		midpoint[0]=(vertex11+vertex21)/2.0;
+		midpoint[1]=(vertex12+vertex22)/2.0;
 
+		flip_edge_index=half_edge_vec[iHe].flip;
+		CCM_iHe;
+		CCM_flip;
+		if(flip_edge_index==-1){
+			linklength=distance(CCM_iHe,midpoint);}
+		else
+			{linklength=0.5*distance(CCM_iHe,CCM_flip);
 
+	}    	
 
-
+	//triangle area
+	for (int inF=0;inF<no_faces;++inF){
+		edgelength0=half_edge_vec[inF*3+0].edge_length;
+		edgelength1=half_edge_vec[inF*3+1].edge_length;
+		edgelength2=half_edge_vec[inF*3+2].edge_length;
+		
+		half_perimeter=(edgelength0+edgelength1+edgelength2)*0.5;
+		arear=sqrt(half_perimeter*(half_perimeter-edgelength0)*(half_perimeter-
+				edgelength1)*(half_perimeter-edgelength2));
+	}
 
 vector<mesh> mesh_obj;
 
