@@ -102,6 +102,19 @@ Convert to halfedge mesh:
 				edgelength1)*(half_perimeter-edgelength2));
 	}
 
+	//Calculate Adimittance----------------------------
+	for (int iHe=0;iHe<no_half_edge;++iHe){
+		edgeLength;
+		linkLength;   
+		deltaT;   //timestep
+		YLlink=0.5*edgeLength*deltaT/(linkLength*mu);
+		YCstub=edgeLength*linkLength*epsilon/deltaT;
+		Ystub=YCstub-YLlink;
+
+		//connect flag
+		
+	}
+
 vector<mesh> mesh_obj;
 
 int main()
