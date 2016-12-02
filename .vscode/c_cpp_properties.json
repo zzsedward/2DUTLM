@@ -18,8 +18,8 @@
         },
         {
             "name": "Win32",
-            "includePath": ["c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
-                            "D:/MingW/include/c++/3.4.5",
+            "includePath": [//"c:/Program Files (x86)/Microsoft Visual Studio 14.0/VC/include",
+                            //"D:/MingW/include/c++/3.4.5",
                             "D:/MingW/include"],
             "browse" : {
                 "limitSymbolsToIncludedHeaders" : true,

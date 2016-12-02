@@ -1,18 +1,8 @@
-#include <string.h>
-#include <complex>
-#include <math.h>
-#include <iterator>
-#include <algorithm>
-#include <stdlib.h>
-#include <iostream>
-#include <fstream>
-#include <limits>
-#include <time.h>
-#include <functional>
-#include <vector>
+#include "utlm.h"
 
 using namespace std;
-class mesh_face{
+
+/*class mesh_face{
 
     double node_centre[2];
     double vertice[3];
@@ -36,7 +26,7 @@ class mesh_edge{
     double Ystub;
 
 
-};
+};*/
 
 
 int main(int argc, char* argv[])
@@ -44,18 +34,40 @@ int main(int argc, char* argv[])
     cout<<"Hello World!"<<endl;
     int timestep(1e4);
     double del_t(1e-10);
+    double node_no_vertice;
+    int node_dim;
+    int node_attri;
+    int node_bound_marker;
+    
+    //ifstream fin("cyl_res20.node");
+    //fin>>node_dim>>node_attri>>node_bound_marker;
 
+    //node node1(fin);
+    //cout<<node1;
+
+    node_vec nodeVecMine("cyl_res20.node");
+    cout<<nodeVecMine;
+
+    ele_vec eleVecMine("cyl_res20.ele");
+    cout<<eleVecMine;
+    /*int eleNo,eleDim,eleAtt;
+    eleIn>>eleNo>>eleDim>>eleAtt;
+
+    element ele1(eleIn);
+    cout<<ele1;
     for(int it=0;it<timestep;++it){
 
         scatter(it,&);
 
         connect(it);
-    }
+    }*/
 
 
 }
 
-void scatter(const int &time_step, vector<mesh_edge> &mesh_edges, vector<mesh_face> &mesh_body)
+
+
+/*void scatter(const int &time_step, vector<mesh_edge> &mesh_edges, vector<mesh_face> &mesh_body)
 {
     int no_edge=mesh_edges.size();
     int no_face=mesh_body.size();
@@ -167,4 +179,4 @@ void edge_excite(vector<mesh_edge> &mesh_edges,
 		mesh_edges[source_edge_index].Vlinki+=Vsource/Ytotal;
 		mesh_edges[source_edge_index].Vstub+=Vsource/Ytotal;
     }
-}
+}*/

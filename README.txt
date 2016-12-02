@@ -4,6 +4,7 @@ Read Mesh -> set material property; set boundary; calculate admittance ->
 Read & load mesh:
 	filetype: node, ele;
 	node file format:
+		first line: number_vertices; dimension; attribute; boundary_marker; 
 		vertices, boundary marker;
 	element file format:
 		vertex index for each face;
