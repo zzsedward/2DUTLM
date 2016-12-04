@@ -16,47 +16,47 @@
 using namespace std;
 
 struct node{
-    private:
-        int id;
-        double vertex[2];
-        int bound_marker;
-    public:
+
+        int node_id;
+        double node_vet[2];
+        int node_bound_marker;
+    
         node(const int _id, const double _x, const double _y, const int _bound_marker)
-            :id(_id), bound_marker(_bound_marker){
-                vertex[0]=_x;
-                vertex[1]=_y;
+            :node_id(_id), node_bound_marker(_bound_marker){
+                node_vet[0]=_x;
+                node_vet[1]=_y;
             }
         node(const int _id, const double* const _vertex, const int _bound_marker)
-            :id(_id), bound_marker(_bound_marker){
-                memcpy(vertex,_vertex,2.0*sizeof(double));
+            :node_id(_id), node_bound_marker(_bound_marker){
+                memcpy(node_vet,_vertex,2.0*sizeof(double));
             }
 
         node(const node &_node)
-            :id(_node.id), bound_marker(_node.bound_marker){
-                memcpy(vertex,_node.vertex,2*sizeof(double));
+            :node_id(_node.node_id), node_bound_marker(_node.node_bound_marker){
+                memcpy(node_vet,_node.node_vet,2*sizeof(double));
             }
 
         node(const char filename[]){
             ifstream fin(filename);
-            fin>>id>>vertex[0]>>vertex[1]>>bound_marker;
+            fin>>node_id>>node_vet[0]>>node_vet[1]>>node_bound_marker;
         }
 
         node(ifstream &fin){
-            fin>>id>>vertex[0]>>vertex[1]>>bound_marker;
-            cout<<"\nID: "<<id;
+            fin>>node_id>>node_vet[0]>>node_vet[1]>>node_bound_marker;
+            cout<<"\nID: "<<node_id;
         }
         const node& operator=(const node& _node){
             if(this==&_node) return (*this);
         }
 
         friend istream& operator>>(istream &in, node &_node){
-            in>>_node.id>>_node.vertex[0]>>_node.vertex[1]>>_node.bound_marker;
+            in>>_node.node_id>>_node.node_vet[0]>>_node.node_vet[1]>>_node.node_bound_marker;
             return(in);
         }
 
         friend ostream& operator<<(ostream &out, const node &_node){
-            out<<endl<<_node.id<<"  ";
-            out<<_node.vertex[0]<<"  "<<_node.vertex[1]<<"  "<<_node.bound_marker<<endl;
+            out<<endl<<_node.node_id<<"  ";
+            out<<_node.node_vet[0]<<"  "<<_node.node_vet[1]<<"  "<<_node.node_bound_marker<<endl;
 
             return(out);
         }
@@ -64,59 +64,61 @@ struct node{
 };
 
 struct element{
-    private:
-        int id;
-        int vertex[3];
-        int attribute;
-    public:
+    
+        int ele_id;
+        int ele_vet[3];
+        int ele_attri;
+
         element(const int _id, const int _v1, const int _v2, const int _v3, const int _attr)
-            :id(_id), attribute(_attr){
-                vertex[0]=_v1;
-                vertex[1]=_v2;
-                vertex[2]=_v3;
-            }
+            :ele_id(_id), ele_attri(_attr){
+                ele_vet[0]=_v1;
+                ele_vet[1]=_v2;
+                ele_vet[2]=_v3;
+        }
+
         element(const int _id, const int* const _vertex, const int _attr)
-            :id(_id), attribute(_attr){
-                memcpy(vertex,_vertex,3.0*sizeof(int));
-            }
+            :ele_id(_id), ele_attri(_attr){
+                memcpy(ele_vet,_vertex,3.0*sizeof(int));
+        }
 
         element(const element &_element)
-            :id(_element.id), attribute(_element.attribute){
-                memcpy(vertex,_element.vertex,3*sizeof(int));
-            }
+            :ele_id(_element.ele_id), ele_attri(_element.ele_attri){
+                memcpy(ele_vet,_element.ele_vet,3*sizeof(int));
+        }
 
         element(const char filename[]){
             ifstream fin(filename);
-            fin>>id>>vertex[0]>>vertex[1]>>vertex[2]>>attribute;
+            fin>>ele_id>>ele_vet[0]>>ele_vet[1]>>ele_vet[2]>>ele_attri;
         }
 
         element(ifstream &fin){
-            fin>>id>>vertex[0]>>vertex[1]>>vertex[2]>>attribute;
-            cout<<"\nID: "<<id;
+            fin>>ele_id>>ele_vet[0]>>ele_vet[1]>>ele_vet[2]>>ele_attri;
+            cout<<"\nID: "<<ele_id;
         }
+
         const element& operator=(const element& _element){
             if(this==&_element) return (*this);
         }
 
         friend istream& operator>>(istream &in, element &_element){
-            in>>_element.id>>_element.vertex[0]>>_element.vertex[1];
-            in>>_element.vertex[2]>>_element.attribute;
+            in>>_element.ele_id>>_element.ele_vet[0]>>_element.ele_vet[1];
+            in>>_element.ele_vet[2]>>_element.ele_attri;
             return(in);
         }
 
         friend ostream& operator<<(ostream &out, const element &_element){
-            out<<endl<<_element.id<<"  ";
-            out<<_element.vertex[0]<<"  "<<_element.vertex[1]<<"  "<<_element.vertex[2];
-            out<<"  "<<_element.attribute<<endl;
+            out<<endl<<_element.ele_id<<"  ";
+            out<<_element.ele_vet[0]<<"  "<<_element.ele_vet[1]<<"  "<<_element.ele_vet[2];
+            out<<"  "<<_element.ele_attri<<endl;
 
             return(out);
         }
 };
 
 struct node_vec{
-    private:
+    
         vector<node> nodex;
-    public:
+    
         node_vec(const vector<node>& _node_vec){
 
             int no_nodes(_node_vec.size());
@@ -150,18 +152,19 @@ struct node_vec{
 
 };
 
-struct ele_vec{
-    private:
+//---------input mesh elements as faces--------------------
+struct faces{
+    
         vector<element> eleVec;
-    public:
-        ele_vec(const vector<element>& _eleVec){
+    
+        faces(const vector<element>& _eleVec){
 
             int noEle(_eleVec.size());
 
             memcpy(&eleVec[0],&_eleVec[0],noEle*sizeof(element));
         }
 
-        ele_vec(const char filename[]){
+        faces(const char filename[]){
 
             ifstream fin(filename);
             int eleSize,eleDim,eleAttri,eleId;
@@ -175,7 +178,7 @@ struct ele_vec{
             }
         }
 
-        friend ostream& operator<<(ostream& out, ele_vec &_eleVec){
+        friend ostream& operator<<(ostream& out, faces &_eleVec){
             int eleSize(_eleVec.eleVec.size());
 
             for(int iEle=0;iEle<eleSize;++iEle){
@@ -183,7 +186,52 @@ struct ele_vec{
             }
             return(out);
         }
+
+};
+
+
+struct edge{
+    
+        int edgeVet[2];
+        int faceId;
+        int edgeFlip;
+        double ccm[2];
+        double midpoint[2];
+        double edgeLength;
+        double linkLength;
+        double Vlinki;
+        double Vlinkr;
+        double Vstub;
         
+        edge():faceId(0),edgeFlip(-1),
+                 edgeLength(0),linkLength(0),
+                 Vlinki(0),Vlinkr(0),Vstub(0){
+
+             memset(&edgeVet[0],0,2*sizeof(int));
+             memset(&ccm[0],0,2*sizeof(double));
+             memset(&midpoint[0],0,2*sizeof(double));
+        }
+
+        edge(int *_edgeVet, 
+             int &_faceId, 
+             int &_edgeFlip,
+             double *_ccm,
+             double *_midpoint,
+             double _edgeLength,
+             double _linkLength,
+             double _Vlinki,
+             double _Vlinkr,
+             double _Vstub)
+                :faceId(_faceId),edgeFlip(_edgeFlip),
+                 edgeLength(_edgeLength),linkLength(_linkLength),
+                 Vlinki(_Vlinki),Vlinkr(_Vlinkr),Vstub(_Vstub){
+
+            memcpy(&edgeVet[0],&_edgeVet[0],2*sizeof(int));
+            memcpy(&ccm[0],&_ccm[0],2*sizeof(double));
+            memcpy(&midpoint[0],&_midpoint[0],2*sizeof(double));
+            
+        }
+
 };
 
 #endif

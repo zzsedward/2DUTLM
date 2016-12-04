@@ -58,6 +58,7 @@ Convert to halfedge mesh:
 
 	cc.x=((x1*x1+y1*y1)(y2-y3)+(x2*x2+y2*y2)(y3-y1)+(x3*x3+y3*y3)(y1-y2))/d;
 	cc.y=((x1*x1+y1*y1)(x3-x2)+(x2*x2+y2*y2)(x1-x3)+(x3*x3+y3*y3)(x2-x1))/d;
+	
 	//find_boundary_edge_function:
 	//find boundary edge when flip edge=-1;
 		

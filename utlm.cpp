@@ -27,7 +27,72 @@ class mesh_edge{
 
 
 };*/
+void creat_half_edge(const node_vec &mnode,
+                     const faces &mface,
+                     vector<edge> &edge_vec){
+            const int nEpf(3);
+            const int no_faces(mface.eleVec.size());
+            const int no_vet(mnode.nodex.size());
+            const int no_edges(no_faces*nEpf);
 
+            edge_vec.resize(no_edges);
+            
+            for(int inF=0;inF<no_faces;++inF){
+                
+                for(int inEpf=0;inEpf<nEpf;++inEpf){
+                    
+                    int v2((inEpf+1)%nEpf);
+                    int startVet(mface.eleVec[inF].ele_vet[inEpf]);
+                    int endVet(mface.eleVec[inF].ele_vet[v2]);
+                    
+                    int edgeIndex(inF*nEpf+inEpf);
+
+//------------------Find faceId--and vertice index for each edge----
+                    edge_vec[edgeIndex].faceId=inF;
+                    edge_vec[edgeIndex].edgeVet[0]=startVet;
+                    edge_vec[edgeIndex].edgeVet[1]=endVet;
+                    
+                    int flip_edge_start(endVet);
+                    int flip_edge_end(startVet);
+
+//------------------Find flip edge index-----------------------------
+                    for(int iFe=0;iFe<edgeIndex;++iFe){
+
+                        if(edge_vec[iFe].edgeVet[0]==flip_edge_start&&edge_vec[iFe].edgeVet[1]==flip_edge_end){
+                            edge_vec[edgeIndex].edgeFlip=iFe;
+                            edge_vec[iFe].edgeFlip=edgeIndex;        
+                        }
+                    }
+
+//-------------------Find circumcentre for each face---------
+                    int v3((inEpf+2)%nEpf);
+                    int Vertice3(mface.eleVec[inF].ele_vet[v3]);
+
+                    double ax(mnode.nodex[startVet-1].node_vet[0]);
+                    double ay(mnode.nodex[startVet-1].node_vet[1]);
+
+                    double bx(mnode.nodex[endVet-1].node_vet[0]);
+                    double by(mnode.nodex[endVet-1].node_vet[1]);
+
+                    double cx(mnode.nodex[Vertice3-1].node_vet[0]);
+                    double cy(mnode.nodex[Vertice3-1].node_vet[1]);
+                    
+                    //cout<<"\nV1: "<<startVet<<"  V2: "<<endVet<<"  V3: "<<Vertice3;
+                    double tempD(2.0*(ax*(by-cy)+bx*(cy-ay)+cx*(ay-by)));
+
+                    double ccm_x(((ax*ax+ay*ay)*(by-cy)+(bx*bx+by*by)*(cy-ay)+(cx*cx+cy*cy)*(ay-by))/tempD);
+                    double ccm_y(((ax*ax+ay*ay)*(cx-bx)+(bx*bx+by*by)*(ax-cx)+(cx*cx+cy*cy)*(bx-ax))/tempD);
+
+                    edge_vec[edgeIndex].ccm[0]=ccm_x;
+                    edge_vec[edgeIndex].ccm[1]=ccm_y;
+
+                    cout<<"\nFACE: "<<inF+1<<"     CCM: "<<edge_vec[edgeIndex].ccm[0]<<"    "<<edge_vec[edgeIndex].ccm[1];
+                    
+                }
+            }
+
+            
+}
 
 int main(int argc, char* argv[])
 {
@@ -46,10 +111,14 @@ int main(int argc, char* argv[])
     //cout<<node1;
 
     node_vec nodeVecMine("cyl_res20.node");
-    cout<<nodeVecMine;
+    //cout<<nodeVecMine;
 
-    ele_vec eleVecMine("cyl_res20.ele");
-    cout<<eleVecMine;
+    faces eleVecMine("cyl_res20.ele");
+    //cout<<eleVecMine;
+
+    vector<edge> edgeVector;
+    //cout<<edgeVector[edgeIndex].edgeVet[0];
+    creat_half_edge(nodeVecMine,eleVecMine,edgeVector);
     /*int eleNo,eleDim,eleAtt;
     eleIn>>eleNo>>eleDim>>eleAtt;
 
