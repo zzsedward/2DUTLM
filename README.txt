@@ -104,6 +104,12 @@ Convert to halfedge mesh:
 				edgelength1)*(half_perimeter-edgelength2));
 	}
 
+	//boundary edge indices for the mesh
+	decide how many boundary edges
+	map<int,int> mesh_boundary;
+	for(int i=0;i<no_bound_edge;++i){
+		mesh_boundary[i]=vector
+
 	//Calculate Adimittance----------------------------
 	for (int iHe=0;iHe<no_half_edge;++iHe){
 		edgeLength;
@@ -117,7 +123,6 @@ Convert to halfedge mesh:
 		
 	}
 
-vector<mesh> mesh_obj;
 
 int main()
 {

@@ -42,8 +42,8 @@ void creat_half_edge(const node_vec &mnode,
                 for(int inEpf=0;inEpf<nEpf;++inEpf){
                     
                     int v2((inEpf+1)%nEpf);
-                    int startVet(mface.eleVec[inF].ele_vet[inEpf]);
-                    int endVet(mface.eleVec[inF].ele_vet[v2]);
+                    int startVet(mface.eleVec[inF].ele_vet[inEpf]-1);
+                    int endVet(mface.eleVec[inF].ele_vet[v2]-1);
                     
                     int edgeIndex(inF*nEpf+inEpf);
 
@@ -66,16 +66,16 @@ void creat_half_edge(const node_vec &mnode,
 
 //-------------------Find circumcentre for each face---------
                     int v3((inEpf+2)%nEpf);
-                    int Vertice3(mface.eleVec[inF].ele_vet[v3]);
+                    int Vertice3(mface.eleVec[inF].ele_vet[v3]-1);
 
-                    double ax(mnode.nodex[startVet-1].node_vet[0]);
-                    double ay(mnode.nodex[startVet-1].node_vet[1]);
+                    double ax(mnode.nodex[startVet].node_vet[0]);
+                    double ay(mnode.nodex[startVet].node_vet[1]);
 
-                    double bx(mnode.nodex[endVet-1].node_vet[0]);
-                    double by(mnode.nodex[endVet-1].node_vet[1]);
+                    double bx(mnode.nodex[endVet].node_vet[0]);
+                    double by(mnode.nodex[endVet].node_vet[1]);
 
-                    double cx(mnode.nodex[Vertice3-1].node_vet[0]);
-                    double cy(mnode.nodex[Vertice3-1].node_vet[1]);
+                    double cx(mnode.nodex[Vertice3].node_vet[0]);
+                    double cy(mnode.nodex[Vertice3].node_vet[1]);
                     
                     //cout<<"\nV1: "<<startVet<<"  V2: "<<endVet<<"  V3: "<<Vertice3;
                     double tempD(2.0*(ax*(by-cy)+bx*(cy-ay)+cx*(ay-by)));
@@ -86,11 +86,73 @@ void creat_half_edge(const node_vec &mnode,
                     edge_vec[edgeIndex].ccm[0]=ccm_x;
                     edge_vec[edgeIndex].ccm[1]=ccm_y;
 
-                    cout<<"\nFACE: "<<inF+1<<"     CCM: "<<edge_vec[edgeIndex].ccm[0]<<"    "<<edge_vec[edgeIndex].ccm[1];
+                    //cout<<"\nFACE: "<<inF+1<<"     CCM: "<<edge_vec[edgeIndex].ccm[0]<<"    "<<edge_vec[edgeIndex].ccm[1];
                     
-                }
+//------------------Find Edge Length --------------
+                    double Ledge(sqrt((ax-bx)*(ax-bx)+(ay-by)*(ay-by)));
+                    edge_vec[edgeIndex].edgeLength=Ledge;
+                    
+                    double mpx((ax+bx)/2);
+                    double mpy((ay+by)/2);
+                    edge_vec[edgeIndex].midpoint[0]=mpx;
+                    edge_vec[edgeIndex].midpoint[1]=mpy;
+                }    
             }
+                map<int,int> mesh_boundary;
+            for(int iHe=0;iHe<no_edges;++iHe){
+//--------------Create boundary mesh index vector--------
+                
+                if(edge_vec[iHe].edgeFlip==-1){
 
+                    mesh_boundary[edge_vec[iHe].edgeVet[0]]=iHe;
+                }
+
+                // for(int i=0;i<mesh_boundary.size();++i){
+                //     cout<<"\nedge index: "<<mesh_boundary[i];
+                // }
+//--------------Fill Link Length-------------------------
+                int iFe(edge_vec[iHe].edgeFlip);
+                double ccm_iHe_x(edge_vec[iHe].ccm[0]);
+                double ccm_iHe_y(edge_vec[iHe].ccm[1]);
+
+                double ccm_flip_x(edge_vec[iFe].ccm[0]);
+                double ccm_flip_y(edge_vec[iFe].ccm[1]);
+
+                double midpoint_x(edge_vec[iHe].midpoint[0]);
+                double midpoint_y(edge_vec[iHe].midpoint[1]);
+
+                double Llink(0);
+
+                if(iFe==-1){
+                    double dx2((ccm_iHe_x-midpoint_x)*(ccm_iHe_x-midpoint_x));
+                    double dy2((ccm_iHe_y-midpoint_y)*(ccm_iHe_y-midpoint_y));
+
+                    Llink=sqrt(dx2+dy2);
+                }
+                else{
+                    double dx2((ccm_iHe_x-ccm_flip_x)*(ccm_iHe_x-ccm_flip_x));
+                    double dy2((ccm_iHe_y-ccm_flip_y)*(ccm_iHe_y-ccm_flip_y));
+
+                    Llink=sqrt(dx2+dy2)*0.5;
+                }
+
+                edge_vec[iHe].linkLength=Llink;
+
+
+
+            }
+                cout<<mesh_boundary.size();
+            for(map<int,int>::iterator it=mesh_boundary.begin();it!=mesh_boundary.end();++it){
+                    cout<<"\nvertice index: "<<it->first<<"  edge index: "<<it->second;
+                }
+//--------------Fill Addimittance---------------------------
+     /*     for(int iHe=0;iHe<no_edges;++iHe){
+                cout<<"\nEdge: "<<iHe;
+                cout<<"   Edge Length: "<<edge_vec[iHe].edgeLength;
+                cout<<"   Link Length: "<<edge_vec[iHe].linkLength<<endl;
+            }*/
+
+//---------
             
 }
 
