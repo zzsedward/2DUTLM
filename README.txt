@@ -119,9 +119,18 @@ Convert to halfedge mesh:
 		YCstub=edgeLength*linkLength*epsilon/deltaT;
 		Ystub=YCstub-YLlink;
 
-		//connect flag
+		//connect flag, create a separate vector that delete flip
+		//edges in the half edge vector for connecting process	 
 		
 	}
+
+//Excitation -----------------------------------------
+Gaussian pulse excitation	
+	parameters: width, delay, c0
+	width=3*min_edge_length/c0*10;
+	delay=1;
+	t0=delay*width;
+	gamma=4(c0*(t-t0))/(width*c0)
 
 
 int main()
@@ -226,3 +235,10 @@ void edge_excite(vector<mesh_edge> &mesh_edges, vector<int> &source_edge, double
 
 
 }
+
+//----22/12/2016---------------------------
+1. set face different face number for different material
+2. set material property into element object (epr,mur)
+3. create mesh_body vector that eliminates flip edges (the edge index that appears in the flip edge position in previous edges gets eliminated)
+4. scatter process
+//------------------------------------------
