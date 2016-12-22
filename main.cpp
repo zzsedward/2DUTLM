@@ -25,9 +25,9 @@ int main(int argc, char* argv[])
     //cout<<nodeVecMine;
 
     faces eleVecMine("cyl_res20.ele");
-    //cout<<eleVecMine;
+    cout<<eleVecMine;
 
-    vector<edge> edgeVector;
+    /*vector<edge> edgeVector;
     //cout<<edgeVector[edgeIndex].edgeVet[0];
     creat_half_edge(nodeVecMine,eleVecMine,edgeVector);
 
@@ -47,6 +47,6 @@ int main(int argc, char* argv[])
         gaussian_wave_excite(width,delay,times,excite);
         cout<<"\ntime step: "<<it<<"    Vsource: "<<excite;
     }
-    cout<<endl;
+    cout<<endl;*/
 
 }

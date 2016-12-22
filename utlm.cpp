@@ -205,6 +205,21 @@ void calAdmittance( const double &dt,
 
 }
 
+void set_inner_circle_different_face_number(
+    faces &my_face,
+    const vector<edge> &my_edges,
+    const double &inner_circle_radius,
+    const double &inner_circle_centre[2],
+    const int &face_number){
+
+    const int no_edge(my_edges.size());
+    const int no_faces(my_face);
+    for(int i=0;i<no_edge;++i){
+        const int face_id(my_edges[i].faceId);
+        
+    }
+}
+
 
 /*void scatter(const int &time_step, vector<mesh_edge> &mesh_edges, vector<mesh_face> &mesh_body)
 {

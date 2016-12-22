@@ -74,24 +74,42 @@ struct element{
     int ele_id;
     int ele_vet[3];
     int ele_attri;
+    int fnum;
+    double epr;
+    double mur;
 
-    element(const int _id, const int _v1, const int _v2, const int _v3, const int _attr)
-        :ele_id(_id), ele_attri(_attr){
+    element(const int _id=0, const int _v1=0, 
+            const int _v2=0, const int _v3=0, 
+            const int _attr=0, int _fnum=1,
+            double _epr=1.0, double _mur=1.0)
+        :ele_id(_id), ele_attri(_attr),
+         fnum(_fnum), epr(_epr), mur(_mur){
             ele_vet[0]=_v1;
             ele_vet[1]=_v2;
             ele_vet[2]=_v3;
     }
 
-    element(const int _id, const int* const _vertex, const int _attr)
-        :ele_id(_id), ele_attri(_attr){
+    element(const int _id=0, const int* const _vertex=NULL, 
+            const int _attr=0, int _fnum=1,
+            double _epr=1.0, double _mur=1.0)
+        :ele_id(_id), ele_attri(_attr), 
+         fnum(_fnum), epr(_epr), mur(_mur){
+           
             memcpy(ele_vet,_vertex,3.0*sizeof(int));
     }
 
     element(const element &_element)
-        :ele_id(_element.ele_id), ele_attri(_element.ele_attri){
+        :ele_id(_element.ele_id), ele_attri(_element.ele_attri), 
+         fnum(_element.fnum),epr(_element.epr),mur(_element.mur){
+            
             memcpy(ele_vet,_element.ele_vet,3*sizeof(int));
     }
 
+//--Set face number -----------------------------------
+    void element_face_number(const int face_number){
+        fnum=face_number;
+    }
+//--Input constructors---------------------------------
     element(const char filename[]){
         ifstream fin(filename);
         fin>>ele_id>>ele_vet[0]>>ele_vet[1]>>ele_vet[2]>>ele_attri;
@@ -99,6 +117,7 @@ struct element{
 
     element(ifstream &fin){
         fin>>ele_id>>ele_vet[0]>>ele_vet[1]>>ele_vet[2]>>ele_attri;
+       
         cout<<"\nID: "<<ele_id;
     }
 
@@ -109,18 +128,22 @@ struct element{
     friend istream& operator>>(istream &in, element &_element){
         in>>_element.ele_id>>_element.ele_vet[0]>>_element.ele_vet[1];
         in>>_element.ele_vet[2]>>_element.ele_attri;
+
         return(in);
     }
 
     friend ostream& operator<<(ostream &out, const element &_element){
         out<<endl<<_element.ele_id<<"  ";
         out<<_element.ele_vet[0]<<"  "<<_element.ele_vet[1]<<"  "<<_element.ele_vet[2];
-        out<<"  "<<_element.ele_attri<<endl;
+        out<<"  "<<_element.ele_attri;
+        out<<"  "<<_element.fnum;
+        out<<"  "<<_element.epr<<"  "<<_element.mur<<endl;
 
         return(out);
     }
 };
 
+//---------Struct for node vectors ----------------
 struct node_vec{
     
     vector<node> nodex;
@@ -132,6 +155,7 @@ struct node_vec{
         memcpy(&nodex[0],&_node_vec[0],no_nodes*sizeof(node));
     }
 
+//--Input constructors----------------------------
     node_vec(const char filename[]){
 
         ifstream fin(filename);
@@ -146,6 +170,7 @@ struct node_vec{
         }
     }
 
+//--Output operator---------------------------------
     friend ostream& operator<<(ostream& out, node_vec &_node_vec){
         int nodeSize(_node_vec.nodex.size());
 
@@ -158,11 +183,12 @@ struct node_vec{
 
 };
 
-//---------input mesh elements as faces--------------------
+//--------- Struct for element vectors as faces-------
 struct faces{
     
     vector<element> eleVec;
 
+//--Constructor------------------------------------
     faces(const vector<element>& _eleVec){
 
         int noEle(_eleVec.size());
@@ -170,6 +196,8 @@ struct faces{
         memcpy(&eleVec[0],&_eleVec[0],noEle*sizeof(element));
     }
 
+
+//--Input constructor----------------------------
     faces(const char filename[]){
 
         ifstream fin(filename);
@@ -184,6 +212,7 @@ struct faces{
         }
     }
 
+//--Output Operator------------------------------------
     friend ostream& operator<<(ostream& out, faces &_eleVec){
         int eleSize(_eleVec.eleVec.size());
 
@@ -191,6 +220,17 @@ struct faces{
             out<<_eleVec.eleVec[iEle];
         }
         return(out);
+    }
+
+//--Set face numbers-----------------------------
+    void faces_face_number(const vector<int> face_id,
+                            const int face_number){
+         
+         const int id_size(face_id.size());
+         for(int i=0;i<id_size;++i){
+             int faceId(face_id[i]);
+             eleVec[faceId].element_face_number(face_number);
+         }
     }
 
 };
@@ -266,6 +306,11 @@ void calAdmittance(const double &dt,
 void scatter(const int &time_step,
              vector<edge> &edge_vector);
 
+void set_inner_circle_different_face_number(
+     const faces &my_face,
+     const double &inner_circle_radius,
+     const double &inner_circle_centre[2],
+     const int &face_number);
 
 
 #endif
