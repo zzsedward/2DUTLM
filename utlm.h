@@ -106,9 +106,22 @@ struct element{
     }
 
 //--Set face number -----------------------------------
-    void element_face_number(const int face_number){
+    void set_face_number(const int face_number){
         fnum=face_number;
     }
+
+    int get_fnum() const {
+        return(fnum);
+    }
+
+//--Set material properties----------------------------
+    void set_material(
+        const double &_epr,
+        const double &_mur,){
+            epr=_epr;
+            mur=_mur;
+    }
+
 //--Input constructors---------------------------------
     element(const char filename[]){
         ifstream fin(filename);
@@ -187,9 +200,11 @@ struct node_vec{
 struct faces{
     
     vector<element> eleVec;
+    double no_material;
 
 //--Constructor------------------------------------
-    faces(const vector<element>& _eleVec){
+    faces(vector<element>& _eleVec, double _no_material=0):
+        no_material(_no_material){
 
         int noEle(_eleVec.size());
 
@@ -229,9 +244,25 @@ struct faces{
          const int id_size(face_id.size());
          for(int i=0;i<id_size;++i){
              int faceId(face_id[i]);
-             eleVec[faceId].element_face_number(face_number);
+             eleVec[faceId].set_face_number(face_number);
          }
     }
+
+//--set no of material-----------------------------
+    int find_no_material() const{
+        const int no_faces(eleVec.size());
+        int max_fnum(1);
+        for(int i=0;i<no_faces;++i){
+            
+            const int fnum_face(eleVec[i].get_fnum());
+            if(max_fnum<fnum_face){
+                max_fnum=fnum_face;
+            }
+        }
+
+        return(max_fnum);
+    }
+
 
 };
 
@@ -284,6 +315,10 @@ struct edge{
             
     }
 
+    double* get_ccm(){
+        return(ccm);
+    }
+
 };
 
 void creat_half_edge(const node_vec &mnode,
@@ -307,10 +342,15 @@ void scatter(const int &time_step,
              vector<edge> &edge_vector);
 
 void set_inner_circle_different_face_number(
-     const faces &my_face,
+     faces &my_face,
      const double &inner_circle_radius,
      const double &inner_circle_centre[2],
      const int &face_number);
 
+void set_material_property(
+    faces &my_face,
+    const vector<double> &_epr,
+    const vector<double> &_mur);
 
+)
 #endif

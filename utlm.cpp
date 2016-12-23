@@ -213,10 +213,30 @@ void set_inner_circle_different_face_number(
     const int &face_number){
 
     const int no_edge(my_edges.size());
-    const int no_faces(my_face);
-    for(int i=0;i<no_edge;++i){
-        const int face_id(my_edges[i].faceId);
-        
+    const int no_faces(my_face.eleVec.size());
+
+    for(int iface=0;iface<no_faces;++iface){
+
+        const int edge_id(iface*3+0);
+        double* circm=my_edges[edge_id].get_ccm();
+        double dist(sqrt((circm[0]-inner_circle_centre[0])*(circm[0]-inner_circle_centre[0])+(circm[1]-inner_circle_centre[1])*(circm[1]-inner_circle_centre[1])));
+
+        if(dist<=inner_circle_radius){
+            my_face.eleVec[iface].set_face_number(face_number);
+        }
+    }
+}
+
+void set_material_property(
+    faces &my_face,
+    const vector<double> &_epr,
+    const vector<double> &_mur){
+    
+    const int no_face_material(my_face.find_no_material);
+    const int no_faces(my_face.eleVec.size());
+    for(int i=0;i<no_faces;++i){
+        const int fnum_id(my_face.eleVec[i].get_fnum());
+        my_face.eleVec[i].set_material(_epr[fnum_id],_mur[fnum_id]);
     }
 }
 
