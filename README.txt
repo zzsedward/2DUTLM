@@ -242,3 +242,5 @@ void edge_excite(vector<mesh_edge> &mesh_edges, vector<int> &source_edge, double
 3. create mesh_body vector that eliminates flip edges (the edge index that appears in the flip edge position in previous edges gets eliminated)
 4. scatter process
 //------------------------------------------
+//----26/12/2016----------------------------
+1. connection process
