@@ -12,9 +12,11 @@
 #include <time.h>
 #include <functional>
 #include <vector>
+#include <list>
 #include <map>
 
 using namespace std;
+
 struct constants{
     static const double get_pi(){return(M_PI);}
     static const double get_e0(){return(8.8541878176e-12);}
@@ -77,13 +79,15 @@ struct element{
     int fnum;
     double epr;
     double mur;
+    double Z0;
 
     element(const int _id=0, const int _v1=0, 
             const int _v2=0, const int _v3=0, 
             const int _attr=0, int _fnum=1,
-            double _epr=1.0, double _mur=1.0)
+            double _epr=1.0, double _mur=1.0,
+            double _Z0=0.0)
         :ele_id(_id), ele_attri(_attr),
-         fnum(_fnum), epr(_epr), mur(_mur){
+         fnum(_fnum), epr(_epr), mur(_mur),Z0(_Z0){
             ele_vet[0]=_v1;
             ele_vet[1]=_v2;
             ele_vet[2]=_v3;
@@ -91,16 +95,18 @@ struct element{
 
     element(const int _id=0, const int* const _vertex=NULL, 
             const int _attr=0, int _fnum=1,
-            double _epr=1.0, double _mur=1.0)
+            double _epr=1.0, double _mur=1.0,
+            double _Z0=0.0)
         :ele_id(_id), ele_attri(_attr), 
-         fnum(_fnum), epr(_epr), mur(_mur){
+         fnum(_fnum), epr(_epr), mur(_mur),Z0(_Z0){
            
             memcpy(ele_vet,_vertex,3.0*sizeof(int));
     }
 
     element(const element &_element)
         :ele_id(_element.ele_id), ele_attri(_element.ele_attri), 
-         fnum(_element.fnum),epr(_element.epr),mur(_element.mur){
+         fnum(_element.fnum),epr(_element.epr),mur(_element.mur),
+         Z0(_element.Z0){
             
             memcpy(ele_vet,_element.ele_vet,3*sizeof(int));
     }
@@ -117,10 +123,25 @@ struct element{
 //--Set material properties----------------------------
     void set_material(
         const double &_epr,
-        const double &_mur,){
+        const double &_mur){
             epr=_epr;
             mur=_mur;
     }
+
+//--Get relative epsilon -----------------------
+    double get_epsilonr() const {
+        return(epr);
+    }
+
+//--Set Z0 ------------------------------------
+    void set_Z0(const double &_Z0){
+        Z0=_Z0;
+    }
+
+    double get_Z0() const{
+        return(Z0);
+    }
+
 
 //--Input constructors---------------------------------
     element(const char filename[]){
@@ -146,11 +167,11 @@ struct element{
     }
 
     friend ostream& operator<<(ostream &out, const element &_element){
-        out<<endl<<_element.ele_id<<"  ";
-        out<<_element.ele_vet[0]<<"  "<<_element.ele_vet[1]<<"  "<<_element.ele_vet[2];
-        out<<"  "<<_element.ele_attri;
-        out<<"  "<<_element.fnum;
-        out<<"  "<<_element.epr<<"  "<<_element.mur<<endl;
+        //out<<endl<<_element.ele_id<<"  ";
+        //out<<_element.ele_vet[0]<<"  "<<_element.ele_vet[1]<<"  "<<_element.ele_vet[2];
+        //out<<"  "<<_element.ele_attri;
+        //out<<"  "<<_element.fnum;
+        out<<"  "<<_element.epr<<"  "<<endl;//_element.mur<<endl;
 
         return(out);
     }
@@ -237,6 +258,25 @@ struct faces{
         return(out);
     }
 
+//--Get vector size------------------------------
+    int get_no_face() const{
+        return (eleVec.size());
+    }
+
+//--Set Z0 ---------------------
+    void set_impedance(const int &face_id,
+                       const int &_Z0){
+        const int no_face(eleVec.size());
+        if(face_id>=0 && face_id<no_face){
+            eleVec[face_id].set_Z0(_Z0);
+        }
+        else{cout<<"\nInvalid face id!"<<endl;}
+    }
+
+    double get_Z0_with_id(const int &face_id) const{
+        return(eleVec[face_id].get_Z0());
+    }
+
 //--Set face numbers-----------------------------
     void faces_face_number(const vector<int> face_id,
                             const int face_number){
@@ -248,7 +288,7 @@ struct faces{
          }
     }
 
-//--set no of material-----------------------------
+//--get no of material-----------------------------
     int find_no_material() const{
         const int no_faces(eleVec.size());
         int max_fnum(1);
@@ -261,6 +301,11 @@ struct faces{
         }
 
         return(max_fnum);
+    }
+
+//--get relative epsilon-----------------------
+    double get_epsilonr_with_id(const int& face_id) const{
+        return(eleVec[face_id].get_epsilonr());
     }
 
 
@@ -315,15 +360,61 @@ struct edge{
             
     }
 
-    double* get_ccm(){
-        return(ccm);
+    ~edge(){}
+
+    int get_face_id() const{
+        return(faceId);
+    }
+
+    double* get_vertice() const{
+        double *_vertice=new double[2];
+        _vertice[0]=edgeVet[0];
+        _vertice[1]=edgeVet[1];
+
+        return(_vertice);
+    }
+
+    double* get_ccm() const{
+        static double _ccm[2];
+        _ccm[0]=ccm[0];
+        _ccm[1]=ccm[1];
+        return(_ccm);
+    }
+
+    double calc_Vlinki_times_Ylink() const{
+        return(Vlinki*Ylink);
+    }
+
+    double get_Vlinki() const{
+        return(Vlinki);
+    }
+
+    void set_Vlinkr(const double &nodeVolt){
+        Vlinkr=nodeVolt-Vlinki;
+    }
+
+    double get_Vlinkr() const{
+        return(Vlinkr);
+    }
+
+    double get_Vstub() const{
+        return(Vstub);
+    }
+
+    double get_Ylink() const{
+        return(Ylink);
+    }
+
+    double get_Ystub() const{
+        return(Ystub);
     }
 
 };
 
 void creat_half_edge(const node_vec &mnode,
                      const faces &mface,
-                     vector<edge> &edge_vec);
+                     vector<edge> &edge_vec,
+                     map<int,int> &mesh_boundary);
 
 void min_edge_link_length(const vector<edge> &edge_vec,
                         double &_minEdge,
@@ -339,12 +430,15 @@ void calAdmittance(const double &dt,
                     vector<edge> &edge_vector);
 
 void scatter(const int &time_step,
-             vector<edge> &edge_vector);
+             vector<edge> &edge_vector,
+             faces &my_faces,
+             map<int,int> &mesh_boundary);
 
 void set_inner_circle_different_face_number(
      faces &my_face,
+     const vector<edge> &my_edges,
      const double &inner_circle_radius,
-     const double &inner_circle_centre[2],
+     const double inner_circle_centre[],
      const int &face_number);
 
 void set_material_property(
@@ -352,5 +446,11 @@ void set_material_property(
     const vector<double> &_epr,
     const vector<double> &_mur);
 
-)
+void create_mesh_body_vector(
+    const vector<edge> &my_edges,
+    list<int> &mesh_body);
+
+void create_mat_bound_vector(
+    const vector<edge> &my_edge);
+
 #endif

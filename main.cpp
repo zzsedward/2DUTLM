@@ -25,11 +25,19 @@ int main(int argc, char* argv[])
     //cout<<nodeVecMine;
 
     faces eleVecMine("cyl_res20.ele");
-    cout<<eleVecMine;
+    //cout<<eleVecMine;
 
-    /*vector<edge> edgeVector;
+    vector<edge> edgeVector;
     //cout<<edgeVector[edgeIndex].edgeVet[0];
-    creat_half_edge(nodeVecMine,eleVecMine,edgeVector);
+    map<int,int> boundaryVector;
+
+    creat_half_edge(nodeVecMine,eleVecMine,edgeVector,boundaryVector);
+    
+    for(map<int,int>::iterator it=boundaryVector.begin();
+    
+    it!=boundaryVector.end();++it){
+            cout<<"\nvertice index: "<<it->first<<"  edge index: "<<it->second;
+    }
 
     min_edge_link_length(edgeVector,minEdge,minLink);
 
@@ -38,10 +46,35 @@ int main(int argc, char* argv[])
     calAdmittance(del_t,eleVecMine,edgeVector);
     //cout<<"\nDel t: "<<del_t;
 
+    const double r_in(0.5);
+    const double origin[2]={0.0,0.0};
+    const int inner_fnum(2);
+
+    set_inner_circle_different_face_number(eleVecMine,edgeVector,r_in,origin,inner_fnum);
+    //cout<<eleVecMine;
+
+    vector<double>epsilon_r;
+    epsilon_r.push_back(1.0);
+    epsilon_r.push_back(1e10);
+
+    vector<double>mu_r;
+    mu_r.push_back(1.0);
+    mu_r.push_back(1.0);
+
+    set_material_property(eleVecMine,epsilon_r,mu_r);
+    //cout<<eleVecMine;
+
+    list<int> mesh_body_list;
+    create_mesh_body_vector(edgeVector,mesh_body_list);
+
+    /*for(list<int>::iterator it=mesh_body_list.begin();it!=mesh_body_list.end();++it){
+        cout<<"\n"<<*it;
+    }*/
+
     double width(3.*minEdge*10/constants::get_c0());
     //cout<<"\nWidth: "<<width;
 
-    for(int it=0;it<timestep;++it){
+    /*for(int it=0;it<timestep;++it){
         double excite(0);
         times=it*del_t;
         gaussian_wave_excite(width,delay,times,excite);

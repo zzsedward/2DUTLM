@@ -29,7 +29,8 @@ class mesh_edge{
 };*/
 void creat_half_edge(const node_vec &mnode,
                      const faces &mface,
-                     vector<edge> &edge_vec){
+                     vector<edge> &edge_vec,
+                     map<int,int> &mesh_boundary){
     const int nEpf(3);
     const int no_faces(mface.eleVec.size());
     const int no_vet(mnode.nodex.size());
@@ -98,13 +99,17 @@ void creat_half_edge(const node_vec &mnode,
             edge_vec[edgeIndex].midpoint[1]=mpy;
         }    
     }
-        map<int,int> mesh_boundary;
+        //map<int,int> mesh_boundary;
     for(int iHe=0;iHe<no_edges;++iHe){
 //--------------Create boundary mesh index vector--------
         
         if(edge_vec[iHe].edgeFlip==-1){
+            double *vertice=new double[2];
+            vertice=edge_vec[iHe].get_vertice();
 
-            mesh_boundary[edge_vec[iHe].edgeVet[0]]=iHe;
+            mesh_boundary[vertice[0]]=iHe;
+
+            delete[] vertice;
         }
 
 //--------------Fill Link Length-------------------------
@@ -188,28 +193,44 @@ void calAdmittance( const double &dt,
 //---Y_stub_L=Y_link_L;
 //---Y_stub=Y_stub_C - Y_stub_L
     const int no_edge(edge_vector.size());
+    const int no_faces(mface.get_no_face());
+    const int no_edge_pF(3);
     double mu0(constants::get_u0());
     double ep0(constants::get_e0());
 
-    for(int iHe=0;iHe<no_edge;++iHe){
-        double edge_length(edge_vector[iHe].edgeLength);
-        double link_length(edge_vector[iHe].linkLength);
+    for(int i=0;i<no_faces;++i){
+        
+        double Ylink_total(0);
+        double face_Z0(0);
 
-        double Y_link(edge_length*dt/(link_length*mu0*2));
-        double Y_stub_C(edge_length*ep0*link_length/dt);
-        double Y_stub(Y_stub_C - Y_link);
+        const double epsilonr(mface.get_epsilonr_with_id(i));
 
-        edge_vector[iHe].Ylink=Y_link;
-        edge_vector[iHe].Ystub=Y_stub;
+        for (int j=0;j<no_edge_pF;++j){
+            const int iHe(i*3.0+j);
+            double edge_length(edge_vector[iHe].edgeLength);
+            double link_length(edge_vector[iHe].linkLength);
+
+            double Y_link(edge_length*dt/(link_length*mu0*2));
+            double Y_stub_C(edge_length*ep0*epsilonr*link_length/dt);
+            double Y_stub(Y_stub_C - Y_link);
+
+            edge_vector[iHe].Ylink=Y_link;
+            edge_vector[iHe].Ystub=Y_stub;
+
+            Ylink_total+=Y_link;
+        }
+
+        face_Z0=1/Ylink_total;
+
+        mface.set_impedance(i,face_Z0);
     }
-
 }
 
 void set_inner_circle_different_face_number(
     faces &my_face,
     const vector<edge> &my_edges,
     const double &inner_circle_radius,
-    const double &inner_circle_centre[2],
+    const double inner_circle_centre[],
     const int &face_number){
 
     const int no_edge(my_edges.size());
@@ -218,7 +239,8 @@ void set_inner_circle_different_face_number(
     for(int iface=0;iface<no_faces;++iface){
 
         const int edge_id(iface*3+0);
-        double* circm=my_edges[edge_id].get_ccm();
+        double* circm=new double[2];
+        circm=my_edges[edge_id].get_ccm();
         double dist(sqrt((circm[0]-inner_circle_centre[0])*(circm[0]-inner_circle_centre[0])+(circm[1]-inner_circle_centre[1])*(circm[1]-inner_circle_centre[1])));
 
         if(dist<=inner_circle_radius){
@@ -232,20 +254,43 @@ void set_material_property(
     const vector<double> &_epr,
     const vector<double> &_mur){
     
-    const int no_face_material(my_face.find_no_material);
+    const int no_face_material(my_face.find_no_material());
     const int no_faces(my_face.eleVec.size());
     for(int i=0;i<no_faces;++i){
         const int fnum_id(my_face.eleVec[i].get_fnum());
-        my_face.eleVec[i].set_material(_epr[fnum_id],_mur[fnum_id]);
+        my_face.eleVec[i].set_material(_epr[fnum_id-1],_mur[fnum_id-1]);
     }
 }
 
+void create_mesh_body_vector(
+    const vector<edge> &my_edges,
+    list<int> &mesh_body){
 
-/*void scatter(const int &time_step, vector<mesh_edge> &mesh_edges, vector<mesh_face> &mesh_body)
+    const int no_edges(my_edges.size());
+    for (int i=0;i<no_edges;++i){
+        mesh_body.push_back(i);
+    }
+
+    list<int>::iterator ite=mesh_body.begin();
+    while(ite!=mesh_body.end()){
+        const int edge_id(*ite);
+        const int flip_id(my_edges[edge_id].edgeFlip);
+        mesh_body.remove(flip_id);
+
+        ite++;
+
+        if(flip_id==-1){mesh_body.remove(edge_id);}
+    }
+}
+
+void scatter(const int &time_step, 
+             vector<edge> &my_edges,                   
+             faces &my_faces,
+             map<int,int> &mesh_boundary)
 {
-    int no_edge=mesh_edges.size();
-    int no_face=mesh_body.size();
-    int no_edge_per_face(3);
+    const int no_edge(my_edges.size());
+    const int no_face(my_faces.get_no_face());
+    const int no_edge_per_face(3);
 
     vector<double> nodeCurrent;
     nodeCurrent.reserve(no_face);
@@ -257,20 +302,52 @@ void set_material_property(
 
     for(int kface=0;kface<no_face;++kface){
 
-        nodeCurrent[kface]=2*(mesh_edges[kface*3+0].Vlinki*mesh_edges[kface*3+0].Ylink+mesh_edges[kface*3+1].Vlinki*mesh_edges[kface*3+1].Ylink+mesh_edges[kface*3+2].Vlinki*mesh_edges[kface*3+2].Ylink);
-        nodeVoltage[kface]=nodeCurrent[kface]*mesh_body[kface].Z0;
+        for(int iepf=0;iepf<3;++iepf){
+            const int edge_id(kface*3.0+iepf);
+            nodeCurrent[kface]+=my_edges[edge_id].calc_Vlinki_times_Ylink();
+        }
+        
+        nodeCurrent[kface]*=2.0;
 
-        mesh_edges[kface*3+0].Vlinkr=nodeVoltage[kface]-mesh_edges[kface*3+0].Vlinki;
+        if(my_faces.get_epsilonr_with_id(kface)>1e8){
+            nodeVoltage[kface]=0.0;
+        }
+        else{
+            nodeVoltage[kface]=nodeCurrent[kface]*my_faces.get_Z0_with_id(kface);
+        }
 
-        mesh_edges[kface*3+1].Vlinkr=nodeVoltage[kface]-mesh_edges[kface*3+1].Vlinki;
-
-        mesh_edges[kface*3+2].Vlinkr=nodeVoltage[kface]-mesh_edges[kface*3+2].Vlinki;
-
+        my_edges[kface*3].set_Vlinkr(nodeVoltage[kface]);
+        my_edges[kface*3+1].set_Vlinkr(nodeVoltage[kface]);
+        my_edges[kface*3+2].set_Vlinkr(nodeVoltage[kface]);
     }
 
-    //-----open circuit voltage and closed circuit current------------------
+    //-----open circuit voltage and closed circuit current--
 
-}*/
+    for(map<int,int>::iterator it=mesh_boundary.begin();it!=mesh_boundary.end();++it){
+        const int edge_id(it->second);
+        const int face_id(my_edges[edge_id].get_face_id());
+        const double face_epr(my_faces.get_epsilonr_with_id(face_id));
+        
+        double closeCurrent(0.0);
+        double openVoltage(0.0);
+
+        if(face_epr>1e8){
+        //----PEC boundary----
+            closeCurrent=0.0;
+            openVoltage=my_edges[edge_id].get_Vlinkr();
+        }
+        else{
+            const double linkVolt(my_edges[edge_id].get_Vlinkr());
+            const double stubVolt(my_edges[edge_id].get_Vstub());
+            const double linkY(my_edges[edge_id].get_Ylink());
+            const double stubY(my_edges[edge_id].get_Ystub());
+
+            closeCurrent=2.0*linkVolt*linkY+2.0*stubVolt*stubY;
+            openVoltage=closeCurrent/(linkY+stubY);
+        }
+    }
+}
+
 /*
 void connect(const int &time_step, vector<mesh_edge> &mesh_edges, vector<mesh_face> &mesh_body, const vector<int> &boundary, const vector<int> &mesh_internal)
 {
