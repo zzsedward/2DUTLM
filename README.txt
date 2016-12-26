@@ -244,3 +244,10 @@ void edge_excite(vector<mesh_edge> &mesh_edges, vector<int> &source_edge, double
 //------------------------------------------
 //----26/12/2016----------------------------
 1. connection process
+	boundary nodes:
+		mesh boundaries;
+			matched(0),
+			PEC_short_circuit(-1);
+			open_circuit(1);
+		material boundaries;
+	inner nodes
