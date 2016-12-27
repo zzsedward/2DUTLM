@@ -30,7 +30,7 @@ class mesh_edge{
 void creat_half_edge(const node_vec &mnode,
                      const faces &mface,
                      vector<edge> &edge_vec,
-                     map<int,int> &mesh_boundary){
+                     vector<int> &mesh_boundary){
     const int nEpf(3);
     const int no_faces(mface.eleVec.size());
     const int no_vet(mnode.nodex.size());
@@ -99,7 +99,7 @@ void creat_half_edge(const node_vec &mnode,
             edge_vec[edgeIndex].midpoint[1]=mpy;
         }    
     }
-        //map<int,int> mesh_boundary;
+        map<int,int> _mesh_boundary;
     for(int iHe=0;iHe<no_edges;++iHe){
 //--------------Create boundary mesh index vector--------
         
@@ -107,7 +107,7 @@ void creat_half_edge(const node_vec &mnode,
             double *vertice=new double[2];
             vertice=edge_vec[iHe].get_vertice();
 
-            mesh_boundary[vertice[0]]=iHe;
+            _mesh_boundary[vertice[0]]=iHe;
 
             delete[] vertice;
         }
@@ -142,10 +142,14 @@ void creat_half_edge(const node_vec &mnode,
 
     }
 
-/*           cout<<mesh_boundary.size();
-    for(map<int,int>::iterator it=mesh_boundary.begin();it!=mesh_boundary.end();++it){
-            cout<<"\nvertice index: "<<it->first<<"  edge index: "<<it->second;
-    }*/
+    cout<<endl<<_mesh_boundary.size();
+
+    for(map<int,int>::iterator it=_mesh_boundary.begin();it!=_mesh_boundary.end();++it){
+            //cout<<"\nvertice index: "<<it->first<<"  edge index: "<<it->second;
+
+        mesh_boundary.push_back(it->second);
+        cout<<"\nBoundary index: "<<mesh_boundary.at(it->first);
+    }
 
             
 }
@@ -280,6 +284,66 @@ void create_mesh_body_vector(
         ite++;
 
         if(flip_id==-1){mesh_body.remove(edge_id);}
+    }
+}
+
+void create_reflection_coeff(
+    const vector<edge> &my_edges,
+    const vector<int> &my_bound_edges,
+    const faces &my_faces,
+    vector<double> &my_refl_coeff,
+    vector<double> &Y_boundary,
+    const vector<double> &my_condition){
+//--boundary condition parameters:
+//--matched boundary: 0;
+//--short circuit (PEC): -1;
+//--open circuit: 1;
+    
+    const int bound_edge_no(my_bound_edges.size());
+    if(my_condition.size()!=bound_edge_no){
+        cout<<"\nError: Boundary condtion size doesnot match boundary edge vector size"<<endl;
+
+        return;
+    }
+
+    const int edge_no(my_edges.size());
+    my_refl_coeff.reserve(edge_no);
+    memset(&my_refl_coeff[0],0,sizeof(int)*edge_no);
+
+    Y_boundary.reserve(edge_no);
+    memset(&Y_boundary[0],0,sizeof(double)*edge_no);
+
+    for(int i=0;i<bound_edge_no;++i){
+        
+        const double condition(my_condition[i]);
+        const double edge_id(my_bound_edges[i]);
+
+        if(condition==1.0)
+        {
+            my_refl_coeff[edge_id]=1.0;
+            Y_boundary[edge_id]=0.0;
+        }    
+        else if(condition==-1.0)
+        {
+            my_refl_coeff[edge_id]=-1.0;
+            Y_boundary[edge_id]=0.0;
+        }
+        else if(condition==0.0)
+        {
+            my_refl_coeff[edge_id]=0.0;
+            const int face_id(my_edges[edge_id].get_face_id());
+
+            const double epr(my_faces.get_epsilonr_with_id(face_id));
+
+            const double Y0(sqrt(constants::get_e0()/constants::get_u0()));
+
+            Y_boundary[edge_id]=Y0*(sqrt(epr*my_edges[edge_id].get_edge_length()));
+        }
+        else
+        {
+            my_refl_coeff[edge_id]=condition;
+        }
+
     }
 }
 

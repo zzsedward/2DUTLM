@@ -29,14 +29,14 @@ int main(int argc, char* argv[])
 
     vector<edge> edgeVector;
     //cout<<edgeVector[edgeIndex].edgeVet[0];
-    map<int,int> boundaryVector;
+    vector<int> boundaryVector;
 
     creat_half_edge(nodeVecMine,eleVecMine,edgeVector,boundaryVector);
     
-    for(map<int,int>::iterator it=boundaryVector.begin();
+    for(vector<int>::iterator it=boundaryVector.begin();
     
     it!=boundaryVector.end();++it){
-            cout<<"\nvertice index: "<<it->first<<"  edge index: "<<it->second;
+            cout<<"\nbound edge index: "<<*it;
     }
 
     min_edge_link_length(edgeVector,minEdge,minLink);

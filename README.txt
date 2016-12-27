@@ -243,7 +243,14 @@ void edge_excite(vector<mesh_edge> &mesh_edges, vector<int> &source_edge, double
 4. scatter process
 //------------------------------------------
 //----26/12/2016----------------------------
-1. connection process
+1. set up boundary conditions:
+	for mesh boundary edge vector,
+	according to the condition input,
+	generate a reflection coeffcient vector with size same as the edge vector,
+	and value equal zero except for the boundary edge indices;
+	also generate a Y boundary vector that calculate the admittance for the boundary edge when matched boundary condition applied; 
+	
+2.. connection process
 	boundary nodes:
 		mesh boundaries;
 			matched(0),

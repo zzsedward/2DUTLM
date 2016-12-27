@@ -366,6 +366,10 @@ struct edge{
         return(faceId);
     }
 
+    double get_edge_length() const{
+        return(edgeLength);
+    }
+
     double* get_vertice() const{
         double *_vertice=new double[2];
         _vertice[0]=edgeVet[0];
@@ -414,7 +418,7 @@ struct edge{
 void creat_half_edge(const node_vec &mnode,
                      const faces &mface,
                      vector<edge> &edge_vec,
-                     map<int,int> &mesh_boundary);
+                     vector<int> &mesh_boundary);
 
 void min_edge_link_length(const vector<edge> &edge_vec,
                         double &_minEdge,
@@ -452,5 +456,13 @@ void create_mesh_body_vector(
 
 void create_mat_bound_vector(
     const vector<edge> &my_edge);
+
+void create_reflection_coeff(
+    const vector<edge> &my_edges,
+    const vector<int> &my_bound_edges,
+    const faces &my_faces,
+    vector<double> &my_refl_coeff,
+    vector<double> &Y_boundary,
+    const vector<double> &my_condition);
 
 #endif
