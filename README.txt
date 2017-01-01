@@ -257,4 +257,5 @@ void edge_excite(vector<mesh_edge> &mesh_edges, vector<int> &source_edge, double
 			PEC_short_circuit(-1);
 			open_circuit(1);
 		material boundaries;
+			PEC_boundary creation;
 	inner nodes

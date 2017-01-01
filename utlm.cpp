@@ -266,6 +266,28 @@ void set_material_property(
     }
 }
 
+void create_PEC_bound_vector(
+    const vector<edge> &my_edges,
+    const faces &my_faces,
+    vector<int> &pec_bound){
+
+    const int no_edges(my_edges.size());
+    const int no_faces(my_faces.get_no_face());
+
+    for(int i=0;i<no_edges;++i){
+        const int cur_face(my_edges[i].get_face_id());
+        const int cur_fnum(my_faces.get_fnum_with_id(cur_face));
+        const int flip_id(my_edges[i].get_flip_edge());
+        const int flip_face(my_edges[flip_id].get_face_id());
+        const int flip_fnum(my_faces.get_fnum_with_id(flip_face));
+
+        const double face_epr(my_faces.get_epsilonr_with_id(cur_face));
+        if(cur_fnum!=flip_fnum&&face_epr>1e8){
+            pec_bound.push_back(i);
+        }
+    }
+}
+
 void create_mesh_body_vector(
     const vector<edge> &my_edges,
     list<int> &mesh_body){
@@ -350,7 +372,7 @@ void create_reflection_coeff(
 void scatter(const int &time_step, 
              vector<edge> &my_edges,                   
              faces &my_faces,
-             map<int,int> &mesh_boundary)
+             vector<int> &mesh_boundary)
 {
     const int no_edge(my_edges.size());
     const int no_face(my_faces.get_no_face());
@@ -380,15 +402,15 @@ void scatter(const int &time_step,
             nodeVoltage[kface]=nodeCurrent[kface]*my_faces.get_Z0_with_id(kface);
         }
 
-        my_edges[kface*3].set_Vlinkr(nodeVoltage[kface]);
-        my_edges[kface*3+1].set_Vlinkr(nodeVoltage[kface]);
-        my_edges[kface*3+2].set_Vlinkr(nodeVoltage[kface]);
+        my_edges[kface*3.0].set_Vlinkr(nodeVoltage[kface]-my_edges[kface*3].get_Vlinki());
+        my_edges[kface*3+1].set_Vlinkr(nodeVoltage[kface]-my_edges[kface*3+1].get_Vlinki());
+        my_edges[kface*3+2].set_Vlinkr(nodeVoltage[kface]-my_edges[kface*3.0+2].get_Vlinki());
     }
 
     //-----open circuit voltage and closed circuit current--
 
-    for(map<int,int>::iterator it=mesh_boundary.begin();it!=mesh_boundary.end();++it){
-        const int edge_id(it->second);
+    for(vector<int>::iterator it=mesh_boundary.begin();it!=mesh_boundary.end();++it){
+        const int edge_id(*it);
         const int face_id(my_edges[edge_id].get_face_id());
         const double face_epr(my_faces.get_epsilonr_with_id(face_id));
         
@@ -412,66 +434,115 @@ void scatter(const int &time_step,
     }
 }
 
-/*
-void connect(const int &time_step, vector<mesh_edge> &mesh_edges, vector<mesh_face> &mesh_body, const vector<int> &boundary, const vector<int> &mesh_internal)
-{
+
+void connect(const int &time_step, 
+            vector<edge> &my_edges, 
+            faces &my_faces, 
+            const vector<int> &my_bound_edges, 
+            const vector<int> &my_pec_bounds,
+            const vector<int> &my_inner_edges,
+            const vector<double> &my_refl_coeff,
+            const vector<double> &my_y_boundary){
+
     //how to decide an edge is on the boundary---------------------------
-    const int no_edge(mesh_edges.size());
-    const int no_face(mesh_body.size());
-    const int no_bound_face(boundary.size());
-    const int no_internal_nodes(mesh_internal.size());
+    const int no_edge(my_edges.size());
+    const int no_face(my_faces.get_no_face());
+    const int no_bound_edge(my_bound_edges.size());
+    
 
     vector<double> Efield;
     Efield.reserve(no_edge);
     vector<double> Hfield;
     Hfield.reserve(no_edge);
 
-    for(int it_bound_face=0;it_bound_face<no_bound_face;++it_bound_face){
+    for(int it_bound_edge=0;it_bound_edge<no_bound_edge;++it_bound_edge){
 
-        const int bound_edge_index(boundary[it_bound_face]);
-
+        const int edge_id(my_bound_edges[it_bound_edge]);
+        const int face_id(my_edges[edge_id].get_face_id());
+        const double face_epr(my_faces.get_epsilonr_with_id(face_id));
         //how to define infinity Ystub or PEC?-------------------------
-        if(mesh_edges[bound_edge_index].Ystub>1e8){
-            Hfield[bound_edge_index]=0;
+        const double reflection_coeff(my_refl_coeff[edge_id]);
+        //--matched boundary - 
+        const double vlinkr(my_edges[edge_id].get_Vlinkr());
+        const double vlinki(my_edges[edge_id].get_Vlinki());
+        const double vstub(my_edges[edge_id].get_Vstub());
+
+        const double ylink(my_edges[edge_id].get_Ylink());
+        const double ystub(my_edges[edge_id].get_Ystub());
+
+        const double node_current(2*(vlinkr*ylink+vstub*ystub));
+
+        if(reflection_coeff==0){
+            
+            const double total_admit(ylink+ystub+my_y_boundary[edge_id]);
+
+            const double node_voltage(node_current/total_admit);
+
+            my_edges[edge_id].set_Vlinki(node_voltage-vlinkr);
+        }
+        else{
+
+            const double total_admit(ylink+ystub);
+
+            const double node_voltage(node_current/total_admit);
+
+            my_edges[edge_id].set_Vlinki(node_voltage-vlinkr);
         }
 
     }
 
-    for(int it_internal_nodes=0;it_internal_nodes<no_internal_nodes;++it_internal_nodes){
+    const int no_inner_edge(my_inner_edges.size());
 
-        const int internal_edge_index(mesh_internal[it_internal_nodes]);
+    for(int it_inner_edge=0;it_inner_edge<no_inner_edge;++it_inner_edge){
 
-        const int flip_edge_index(mesh_edges[internal_edge_index].flip_index);
+        const int edge_id(my_inner_edges[it_inner_edge]);
 
-        if(mesh_edges[internal_edge_index].Ystub>1e8||mesh_edges[flip_edge_index].Ystub>1e8){
+        const int flip_edge_id(my_edges[edge_id].get_flip_edge());
 
-            mesh_edges[internal_edge_index].Vlinki=0;
-            mesh_edges[internal_edge_index].Vstub=0;
-            mesh_edges[flip_edge_index].Vlinki=0;
-            mesh_edges[flip_edge_index].Vstub=0;
+        const int cur_face_id(my_edges[edge_id].get_face_id());
+        const int flip_face_id(my_edges[flip_edge_id].get_face_id());
+
+        const double cur_face_epr(my_faces.get_epsilonr_with_id(cur_face_id));
+        const double flip_face_epr(my_faces.get_epsilonr_with_id(flip_face_id));
+
+        const double edge_Vlinkr(my_edges[edge_id].get_Vlinkr());
+        const double flip_Vlinkr(my_edges[flip_edge_id].get_Vlinkr());
+        const double edge_Vstub(my_edges[edge_id].get_Vstub());
+        const double flip_Vstub(my_edges[flip_edge_id].get_Vstub());
+
+        if(cur_face_epr>1e8||flip_face_epr>1e8){
+
+            my_edges[edge_id].set_Vlinki(0.0);
+            my_edges[edge_id].set_Vstub(0.0);
+            my_edges[flip_edge_id].set_Vlinkr(0.0);
+            my_edges[flip_edge_id].set_Vstub(0.0);
 
         }
         else{
-            double Ilinkr(mesh_edges[internal_edge_index].Vlinkr*mesh_edges[internal_edge_index].Ylink);
-            double Ilinkr_flip(mesh_edges[flip_edge_index].Vlinkr*mesh_edges[flip_edge_index].Ylink);
-            double Istub(mesh_edges[internal_edge_index].Vstub*mesh_edges[internal_edge_index].Ystub);
-            double Istub_flip(mesh_edges[flip_edge_index].Vstub*mesh_edges[flip_edge_index].Ystub);
 
-            double Iconnect(2*(Ilinkr+Ilinkr_flip+Istub+Istub_flip));
-            double Ylink(mesh_edges[internal_edge_index].Ylink+mesh_edges[flip_edge_index].Ylink);
-            double Ystub(mesh_edges[internal_edge_index].Ystub+mesh_edges[flip_edge_index].Ystub);
-            double Ytotal(Ylink+Ystub);
 
-            mesh_edges[internal_edge_index].Vlinki=Iconnect/Ytotal-mesh_edges[internal_edge_index].Vlinkr;
-            mesh_edges[internal_edge_index].Vstub=Iconnect/Ytotal-mesh_edges[internal_edge_index].Vstub;
-            mesh_edges[flip_edge_index].Vlinki=Iconnect/Ytotal-mesh_edges[flip_edge_index].Vlinkr;
-            mesh_edges[flip_edge_index].Vstub=Iconnect/Ytotal-mesh_edges[flip_edge_index].Vstub;
+            const double Ilinkr(my_edges[edge_id].get_Vlinkr()*my_edges[edge_id].get_Ylink());
+            const double Ilinkr_flip(my_edges[flip_edge_id].get_Vlinkr()*my_edges[flip_edge_id].get_Ylink());
+            const double Istub(my_edges[edge_id].get_Vstub()*my_edges[edge_id].get_Ystub());
+            const double Istub_flip(my_edges[flip_edge_id].get_Vstub()*my_edges[flip_edge_id].get_Ystub());
+
+            const double Iconnect(2*(Ilinkr+Ilinkr_flip+Istub+Istub_flip));
+            const double Ylink(my_edges[edge_id].get_Ylink()+my_edges[flip_edge_id].get_Ylink());
+            const double Ystub(my_edges[edge_id].get_Ystub()+my_edges[flip_edge_id].get_Ystub());
+            const double Ytotal(Ylink+Ystub);
+
+            const double connect_voltage(Iconnect/Ytotal);
+
+            my_edges[edge_id].set_Vlinki(connect_voltage-edge_Vlinkr);
+            my_edges[edge_id].set_Vstub(connect_voltage-edge_Vstub);
+            my_edges[flip_edge_id].set_Vlinki(connect_voltage-flip_Vlinkr);
+            my_edges[flip_edge_id].set_Vstub(connect_voltage-flip_Vstub);
         }
     }
 }
 
 
-void edge_excite(vector<mesh_edge> &mesh_edges, 
+void edge_excite(vector<edge> &mesh_edges, 
                 const vector<int> &source_edge,
                 const double &Vsource)
 {
@@ -482,16 +553,19 @@ void edge_excite(vector<mesh_edge> &mesh_edges,
 
         int source_edge_index(source_edge[sei]);
 
-        int source_edge_flip(mesh_edges[source_edge_index].flip);
+        int source_edge_flip(mesh_edges[source_edge_index].get_flip_edge());
 
-		double Ytotal(mesh_edges[source_edge_index].Ylink+mesh_edges[source_edge_index].Ystub);
+        double Ytotal(mesh_edges[source_edge_index].get_Ylink()+mesh_edges[source_edge_index].get_Ystub());
 
 		if(source_edge_flip!=0){
 
-			Ytotal+=mesh_edges[source_edge_flip].Ylink+mesh_edges[source_edge_flip].Ystub;
+            Ytotal+=mesh_edges[source_edge_flip].get_Ylink()+mesh_edges[source_edge_flip].get_Ystub();
 	    }
 
-		mesh_edges[source_edge_index].Vlinki+=Vsource/Ytotal;
-		mesh_edges[source_edge_index].Vstub+=Vsource/Ytotal;
+        const double Vlinkr(mesh_edges[source_edge_index].get_Vlinkr());
+        const double link_voltage_incident(mesh_edges[source_edge_index].get_Vlinki());
+        const double stub_voltage(mesh_edges[source_edge_index].get_Vstub());
+        mesh_edges[source_edge_index].set_Vlinki(link_voltage_incident+Vsource/Ytotal);
+        mesh_edges[source_edge_index].set_Vstub(stub_voltage+Vsource/Ytotal);
     }
-}*/
+}

@@ -64,12 +64,24 @@ int main(int argc, char* argv[])
     set_material_property(eleVecMine,epsilon_r,mu_r);
     //cout<<eleVecMine;
 
+    vector<int> pec_boundary_edges;
+    create_PEC_bound_vector(edgeVector,eleVecMine,pec_boundary_edges);
+
     list<int> mesh_body_list;
     create_mesh_body_vector(edgeVector,mesh_body_list);
 
     /*for(list<int>::iterator it=mesh_body_list.begin();it!=mesh_body_list.end();++it){
         cout<<"\n"<<*it;
     }*/
+
+    vector<double> reflect_coeff;
+    vector<double> Y_boundary;
+
+    vector<double> bound_condition;
+    bound_condition.reserve(boundaryVector.size());
+    memset(&bound_condition[0],-1.0,sizeof(double)*boundaryVector.size());
+
+    create_reflection_coeff(edgeVector,boundaryVector,eleVecMine,reflect_coeff,Y_boundary,bound_condition);
 
     double width(3.*minEdge*10/constants::get_c0());
     //cout<<"\nWidth: "<<width;

@@ -288,6 +288,11 @@ struct faces{
          }
     }
 
+//--Get face number with id------------------
+    int get_fnum_with_id(const int &face_id) const{
+        return(eleVec[face_id].get_fnum());
+    }
+
 //--get no of material-----------------------------
     int find_no_material() const{
         const int no_faces(eleVec.size());
@@ -366,6 +371,10 @@ struct edge{
         return(faceId);
     }
 
+    int get_flip_edge() const{
+        return(edgeFlip);
+    }
+
     double get_edge_length() const{
         return(edgeLength);
     }
@@ -393,8 +402,16 @@ struct edge{
         return(Vlinki);
     }
 
-    void set_Vlinkr(const double &nodeVolt){
-        Vlinkr=nodeVolt-Vlinki;
+    void set_Vlinki(const double &voltage){
+        Vlinki=voltage;
+    }
+
+    void set_Vlinkr(const double &voltage){
+        Vlinkr=voltage;
+    }
+
+    void set_Vstub(const double &voltage){
+        Vstub=voltage;
     }
 
     double get_Vlinkr() const{
@@ -433,11 +450,6 @@ void calAdmittance(const double &dt,
                     faces &mface,
                     vector<edge> &edge_vector);
 
-void scatter(const int &time_step,
-             vector<edge> &edge_vector,
-             faces &my_faces,
-             map<int,int> &mesh_boundary);
-
 void set_inner_circle_different_face_number(
      faces &my_face,
      const vector<edge> &my_edges,
@@ -449,6 +461,11 @@ void set_material_property(
     faces &my_face,
     const vector<double> &_epr,
     const vector<double> &_mur);
+
+void create_PEC_bound_vector(
+    const vector<edge> &my_edges,
+    const faces &my_faces,
+    vector<int> &pec_bound);
 
 void create_mesh_body_vector(
     const vector<edge> &my_edges,
@@ -464,5 +481,23 @@ void create_reflection_coeff(
     vector<double> &my_refl_coeff,
     vector<double> &Y_boundary,
     const vector<double> &my_condition);
+
+void scatter(const int &time_step,
+             vector<edge> &edge_vector,
+             faces &my_faces,
+             vector<int> &mesh_boundary);
+
+void connect(const int &time_step,
+             vector<edge> &my_edges,
+             faces &my_faces,
+             const vector<int> &my_bound_edges,
+             const vector<int> &my_pec_bounds,
+             const vector<int> &my_inner_edges,
+             const vector<double> &my_refl_coeff,
+             const vector<double> &my_y_boundary);
+
+void edge_excite(vector<edge> &mesh_edges, 
+                const vector<int> &source_edge,
+                const double &Vsource);
 
 #endif
