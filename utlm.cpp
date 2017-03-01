@@ -27,6 +27,23 @@ class mesh_edge{
 
 
 };*/
+
+void read_from_gmsh(const char filename[]){
+    ifstream read_gmsh(filename);
+    string comment;
+
+    if(!read_gmsh){
+        cerr<<"\nFile not open."<<endl;
+    }
+
+    while(getline(read_gmsh,comment)){
+        
+        if(comment[0]=='$') continue;
+
+        double node_coor
+    }
+}
+
 void creat_half_edge(const node_vec &mnode,
                      const faces &mface,
                      vector<edge> &edge_vec,
@@ -48,7 +65,7 @@ void creat_half_edge(const node_vec &mnode,
             
             int edgeIndex(inF*nEpf+inEpf);
 
-//------------------Find faceId--and vertice index for each edge----
+    //------------------Find faceId--and vertice index for each edge----
             edge_vec[edgeIndex].faceId=inF;
             edge_vec[edgeIndex].edgeVet[0]=startVet;
             edge_vec[edgeIndex].edgeVet[1]=endVet;
@@ -56,7 +73,7 @@ void creat_half_edge(const node_vec &mnode,
             int flip_edge_start(endVet);
             int flip_edge_end(startVet);
 
-//------------------Find flip edge index-----------------------------
+    //------------------Find flip edge index-----------------------------
             for(int iFe=0;iFe<edgeIndex;++iFe){
 
                 if(edge_vec[iFe].edgeVet[0]==flip_edge_start&&edge_vec[iFe].edgeVet[1]==flip_edge_end){
@@ -65,7 +82,7 @@ void creat_half_edge(const node_vec &mnode,
                 }
             }
 
-//-------------------Find circumcentre for each face---------
+    //-------------------Find circumcentre for each face---------
             int v3((inEpf+2)%nEpf);
             int Vertice3(mface.eleVec[inF].ele_vet[v3]-1);
 
@@ -89,7 +106,7 @@ void creat_half_edge(const node_vec &mnode,
 
             //cout<<"\nFACE: "<<inF+1<<"     CCM: "<<edge_vec[edgeIndex].ccm[0]<<"    "<<edge_vec[edgeIndex].ccm[1];
             
-//------------------Find Edge Length --------------
+    //------------------Find Edge Length --------------
             double Ledge(sqrt((ax-bx)*(ax-bx)+(ay-by)*(ay-by)));
             edge_vec[edgeIndex].edgeLength=Ledge;
             
@@ -101,7 +118,7 @@ void creat_half_edge(const node_vec &mnode,
     }
         map<int,int> _mesh_boundary;
     for(int iHe=0;iHe<no_edges;++iHe){
-//--------------Create boundary mesh index vector--------
+    //--------------Create boundary mesh index vector--------
         
         if(edge_vec[iHe].edgeFlip==-1){
             double *vertice=new double[2];
@@ -112,7 +129,7 @@ void creat_half_edge(const node_vec &mnode,
             delete[] vertice;
         }
 
-//--------------Fill Link Length-------------------------
+    //--------------Fill Link Length-------------------------
         int iFe(edge_vec[iHe].edgeFlip);
         double ccm_iHe_x(edge_vec[iHe].ccm[0]);
         double ccm_iHe_y(edge_vec[iHe].ccm[1]);
@@ -190,12 +207,12 @@ void calAdmittance( const double &dt,
                     faces &mface,
                     vector<edge> &edge_vector){
     
-//---Calculate Addimittance--------------------
-//---Y_LinkL, Y_stub_C, Y_Stub_L---------------------
-//---Y_link_L=edge_length*del_t/(link_length*mu0*2)
-//---Y_stub_C=epsilon*edge_length*link_length/del_t;
-//---Y_stub_L=Y_link_L;
-//---Y_stub=Y_stub_C - Y_stub_L
+    //---Calculate Addimittance--------------------
+    //---Y_LinkL, Y_stub_C, Y_Stub_L---------------------
+    //---Y_link_L=edge_length*del_t/(link_length*mu0*2)
+    //---Y_stub_C=epsilon*edge_length*link_length/del_t;
+    //---Y_stub_L=Y_link_L;
+    //---Y_stub=Y_stub_C - Y_stub_L
     const int no_edge(edge_vector.size());
     const int no_faces(mface.get_no_face());
     const int no_edge_pF(3);
@@ -316,10 +333,10 @@ void create_reflection_coeff(
     vector<double> &my_refl_coeff,
     vector<double> &Y_boundary,
     const vector<double> &my_condition){
-//--boundary condition parameters:
-//--matched boundary: 0;
-//--short circuit (PEC): -1;
-//--open circuit: 1;
+    //--boundary condition parameters:
+    //--matched boundary: 0;
+    //--short circuit (PEC): -1;
+    //--open circuit: 1;
     
     const int bound_edge_no(my_bound_edges.size());
     if(my_condition.size()!=bound_edge_no){
@@ -372,8 +389,7 @@ void create_reflection_coeff(
 void scatter(const int &time_step, 
              vector<edge> &my_edges,                   
              faces &my_faces,
-             vector<int> &mesh_boundary)
-{
+             vector<int> &mesh_boundary){
     const int no_edge(my_edges.size());
     const int no_face(my_faces.get_no_face());
     const int no_edge_per_face(3);
@@ -541,11 +557,9 @@ void connect(const int &time_step,
     }
 }
 
-
 void edge_excite(vector<edge> &mesh_edges, 
                 const vector<int> &source_edge,
-                const double &Vsource)
-{
+                const double &Vsource){
 
     int no_source_edge(source_edge.size());
 

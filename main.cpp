@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
     faces eleVecMine("cyl_res20.ele");
     //cout<<eleVecMine;
 
-    vector<edge> edgeVector;
+    vector<edge> edgeVector;   
     //cout<<edgeVector[edgeIndex].edgeVet[0];
     vector<int> boundaryVector;
 

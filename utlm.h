@@ -432,6 +432,8 @@ struct edge{
 
 };
 
+void read_from_gmsh(const char filename[]);
+
 void creat_half_edge(const node_vec &mnode,
                      const faces &mface,
                      vector<edge> &edge_vec,
