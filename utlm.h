@@ -29,7 +29,7 @@ struct node{
     double node_vet[2];
     int node_bound_marker;
 
-    node(const int _id, const double _x, const double _y, const int _bound_marker)
+    node(const int _id=0, const double _x=0.0, const double _y=0.0, const int _bound_marker=0)
         :node_id(_id), node_bound_marker(_bound_marker){
             node_vet[0]=_x;
             node_vet[1]=_y;
@@ -433,7 +433,9 @@ struct edge{
 
 };
 
-void read_from_gmsh(const char filename[]);
+void read_from_gmsh(const char filename[],
+		    vector<node> &node_input,
+		    vector<element> &face_input);
 
 void creat_half_edge(const node_vec &mnode,
                      const faces &mface,

@@ -29,8 +29,8 @@ class mesh_edge{
 };*/
 
 void read_from_gmsh(const char filename[],
-                    node_vec &node_input,
-                    faces &face_input){
+                    vector<node> &node_input,
+                    vector<element>  &face_input){
     cout<<"\nRead Data from gmsh file."<<endl;
     ifstream read_data(filename);
 
@@ -38,11 +38,9 @@ void read_from_gmsh(const char filename[],
 
     string input_line;
 
-    vector<node> node_vector;
-    vector<element> face_vector;
-
     while(getline(read_data,input_line)){
-        
+       //cout<<"\nFile Open"<<endl; 
+	cout<<"\n"<<input_line<<endl;
         if(input_line=="$MeshFormat\r"){
             cout<<"\nMesh Format read"<<endl;
 
@@ -55,7 +53,7 @@ void read_from_gmsh(const char filename[],
             cout<<"   file_type: "<<file_type;
             cout<<"   data_size: "<<data_size; 
             cout<<"\nMesh Format read finish.";
-        }
+       }
 
         if(input_line=="$PhysicalNames\r"){
             cout<<"\nRead Face Property Number.";
@@ -93,13 +91,18 @@ void read_from_gmsh(const char filename[],
             
             for(int iNode=0;iNode<node_size;++iNode){
                 getline(read_data,input_line);
-                double node_x,node_y,node_id;
+                double node_x,node_y;
+		int node_index;
+
                 stringstream node_coord(input_line);
                 node_coord>>node_index>>node_x>>node_y;
 
-                cout<<"\nNode Read -- ID: "<<node_id<<"  "<<node_x<<"  "<<node_y<<endl;
+                cout<<"\nNode Read -- ID: "<<node_index<<"  "<<node_x<<"  "<<node_y<<endl;
 
-                node my_node(node_id,)
+                node my_node(node_index,node_x,node_y);
+		
+		node_input.push_back(my_node);
+		
             }
 
             getline(read_data,input_line);
@@ -109,8 +112,13 @@ void read_from_gmsh(const char filename[],
             }
             
             cout<<"\nNode Read End."<<endl;
+	    
+	    cout<<"\nNode vector size: "<<node_input.size();
+	    
+	    for(vector<node>::iterator itNode=node_input.begin();itNode!=node_input.end();++itNode){
+		cout<<"\n"<<*itNode<<endl;
+	    } 
         }
-
 
     }
 }

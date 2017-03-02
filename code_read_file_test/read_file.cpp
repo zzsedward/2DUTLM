@@ -11,9 +11,9 @@ int main(int argc, char* argv[]){
 	ifstream read_data("ex4.msh");
 	
 	if(!read_data){cerr<<"\nFile no open!";}
-	
-	cout<<"\nFile open successfully!";
-	
+	else{	
+		cout<<"\nFile open successfully!";
+	}
 	string input_line;
 
 	while(getline(read_data,input_line)){
