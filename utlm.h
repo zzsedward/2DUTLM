@@ -34,6 +34,7 @@ struct node{
             node_vet[0]=_x;
             node_vet[1]=_y;
         }
+
     node(const int _id, const double* const _vertex, const int _bound_marker)
         :node_id(_id), node_bound_marker(_bound_marker){
             memcpy(node_vet,_vertex,2.0*sizeof(double));

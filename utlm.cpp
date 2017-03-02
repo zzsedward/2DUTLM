@@ -28,19 +28,90 @@ class mesh_edge{
 
 };*/
 
-void read_from_gmsh(const char filename[]){
-    ifstream read_gmsh(filename);
-    string comment;
+void read_from_gmsh(const char filename[],
+                    node_vec &node_input,
+                    faces &face_input){
+    cout<<"\nRead Data from gmsh file."<<endl;
+    ifstream read_data(filename);
 
-    if(!read_gmsh){
-        cerr<<"\nFile not open."<<endl;
-    }
+    if(!read_data){cerr<<"\nFile not open!";}
 
-    while(getline(read_gmsh,comment)){
+    string input_line;
+
+    vector<node> node_vector;
+    vector<element> face_vector;
+
+    while(getline(read_data,input_line)){
         
-        if(comment[0]=='$') continue;
+        if(input_line=="$MeshFormat\r"){
+            cout<<"\nMesh Format read"<<endl;
 
-        double node_coor
+            getline(read_data,input_line);
+            double mesh_version, file_type, data_size;
+            stringstream mesh_format(input_line);
+
+            mesh_format>>mesh_version>>file_type>>data_size;
+            cout<<"\nMesh Format Output \nversion: "<<mesh_version;
+            cout<<"   file_type: "<<file_type;
+            cout<<"   data_size: "<<data_size; 
+            cout<<"\nMesh Format read finish.";
+        }
+
+        if(input_line=="$PhysicalNames\r"){
+            cout<<"\nRead Face Property Number.";
+            getline(read_data,input_line);
+            int no_face_number;
+            stringstream fnum_read(input_line);
+
+            fnum_read>>no_face_number;
+            
+            for(int iFnum=0;iFnum<no_face_number;++iFnum){
+                getline(read_data,input_line);
+                int physical_dimension,face_number;
+                string face_name;
+                stringstream face_prop(input_line);
+                face_prop>>physical_dimension>>face_number>>face_name;
+
+                cout<<"\nFace Number Read. "<<physical_dimension<<"  "<<face_number<<"  "<<face_name;
+            }
+            
+            getline(read_data,input_line);
+            if(input_line!="$EndPhysicalNames\r"){
+                cout<<"\nFace Number read not finish."<<input_line<<endl;
+            }
+            
+            cout<<"\nFaceNumber Read Finish."<<endl;
+        }
+
+        if(input_line=="$Nodes\r"){
+            
+            getline(read_data,input_line);
+            double node_size;
+            istringstream read_node(input_line);
+            read_node>>node_size;
+            cout<<"\nNode Size: "<<node_size;
+            
+            for(int iNode=0;iNode<node_size;++iNode){
+                getline(read_data,input_line);
+                double node_x,node_y,node_id;
+                stringstream node_coord(input_line);
+                node_coord>>node_index>>node_x>>node_y;
+
+                cout<<"\nNode Read -- ID: "<<node_id<<"  "<<node_x<<"  "<<node_y<<endl;
+
+                node my_node(node_id,)
+            }
+
+            getline(read_data,input_line);
+            if(input_line!="$EndNodes\r"){
+                cout<<"\nNode reading not Finish!"<<endl; 
+                cout<<input_line<<endl;
+            }
+            
+            cout<<"\nNode Read End."<<endl;
+        }
+
+
     }
 }
 

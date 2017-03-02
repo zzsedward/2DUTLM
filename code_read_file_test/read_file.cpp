@@ -8,7 +8,7 @@ using namespace std;
 int main(int argc, char* argv[]){
 
 	cout<<"\nHello World!"<<endl;
-	ifstream read_data("ex2.msh");
+	ifstream read_data("ex4.msh");
 	
 	if(!read_data){cerr<<"\nFile no open!";}
 	
@@ -33,6 +33,32 @@ int main(int argc, char* argv[]){
             cout<<"\nMesh Format read finish.";
         }
         
+        if(input_line=="$PhysicalNames\r"){
+            cout<<"\nRead Face Property Number.";
+            getline(read_data,input_line);
+            int no_face_number;
+            stringstream fnum_read(input_line);
+
+            fnum_read>>no_face_number;
+            
+            for(int iFnum=0;iFnum<no_face_number;++iFnum){
+                getline(read_data,input_line);
+                int physical_dimension,face_number;
+                string face_name;
+                stringstream face_prop(input_line);
+                face_prop>>physical_dimension>>face_number>>face_name;
+
+                cout<<"\nFace Number Read. "<<physical_dimension<<"  "<<face_number<<"  "<<face_name;
+            }
+            
+            getline(read_data,input_line);
+            if(input_line!="$EndPhysicalNames\r"){
+                cout<<"\nFace Number read not finish."<<input_line<<endl;
+            }
+            
+            cout<<"\nFaceNumber Read Finish."<<endl;
+        }
+            
         if(input_line=="$Nodes\r"){
             
             getline(read_data,input_line);
