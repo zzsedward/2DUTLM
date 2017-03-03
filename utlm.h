@@ -182,10 +182,12 @@ struct element{
 struct node_vec{
     
     vector<node> nodex;
+    int no_nodes;
 
     node_vec(const vector<node>& _node_vec){
 
         int no_nodes(_node_vec.size());
+	nodex.resize(no_nodes);
 
         memcpy(&nodex[0],&_node_vec[0],no_nodes*sizeof(node));
     }

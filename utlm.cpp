@@ -40,8 +40,14 @@ void read_from_gmsh(const char filename[],
 
     while(getline(read_data,input_line)){
        //cout<<"\nFile Open"<<endl; 
+<<<<<<< HEAD
 	cout<<"\n"<<input_line<<endl;
         if(input_line=="$MeshFormat\r"){
+=======
+       //cout<<"\nInput: "<<input_line;
+        
+	if(input_line=="$MeshFormat"){
+>>>>>>> master
             cout<<"\nMesh Format read"<<endl;
 
             getline(read_data,input_line);
@@ -55,7 +61,7 @@ void read_from_gmsh(const char filename[],
             cout<<"\nMesh Format read finish.";
        }
 
-        if(input_line=="$PhysicalNames\r"){
+        if(input_line=="$PhysicalNames"){
             cout<<"\nRead Face Property Number.";
             getline(read_data,input_line);
             int no_face_number;
@@ -74,14 +80,14 @@ void read_from_gmsh(const char filename[],
             }
             
             getline(read_data,input_line);
-            if(input_line!="$EndPhysicalNames\r"){
+            if(input_line!="$EndPhysicalNames"){
                 cout<<"\nFace Number read not finish."<<input_line<<endl;
             }
             
             cout<<"\nFaceNumber Read Finish."<<endl;
         }
 
-        if(input_line=="$Nodes\r"){
+        if(input_line=="$Nodes"){
             
             getline(read_data,input_line);
             double node_size;
@@ -106,7 +112,7 @@ void read_from_gmsh(const char filename[],
             }
 
             getline(read_data,input_line);
-            if(input_line!="$EndNodes\r"){
+            if(input_line!="$EndNodes"){
                 cout<<"\nNode reading not Finish!"<<endl; 
                 cout<<input_line<<endl;
             }
@@ -115,9 +121,15 @@ void read_from_gmsh(const char filename[],
 	    
 	    cout<<"\nNode vector size: "<<node_input.size();
 	    
+<<<<<<< HEAD
 	    for(vector<node>::iterator itNode=node_input.begin();itNode!=node_input.end();++itNode){
 		cout<<"\n"<<*itNode<<endl;
 	    } 
+=======
+	  //  for(vector<node>::iterator itNode=node_input.begin();itNode!=node_input.end();++itNode){
+	   //	cout<<"\n"<<*itNode;
+	   // } 
+>>>>>>> master
         }
 
     }
