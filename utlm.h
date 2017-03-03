@@ -168,11 +168,11 @@ struct element{
     }
 
     friend ostream& operator<<(ostream &out, const element &_element){
-        //out<<endl<<_element.ele_id<<"  ";
-        //out<<_element.ele_vet[0]<<"  "<<_element.ele_vet[1]<<"  "<<_element.ele_vet[2];
-        //out<<"  "<<_element.ele_attri;
-        //out<<"  "<<_element.fnum;
-        out<<"  "<<_element.epr<<"  "<<endl;//_element.mur<<endl;
+        out<<endl<<_element.ele_id<<"  ";
+        out<<_element.ele_vet[0]<<"  "<<_element.ele_vet[1]<<"  "<<_element.ele_vet[2];
+        out<<"  "<<_element.ele_attri;
+        out<<"  "<<_element.fnum;
+        out<<"  "<<_element.epr<<"  "<<_element.mur<<endl;
 
         return(out);
     }
@@ -186,8 +186,8 @@ struct node_vec{
 
     node_vec(const vector<node>& _node_vec){
 
-        int no_nodes(_node_vec.size());
-	nodex.resize(no_nodes);
+        no_nodes=_node_vec.size();
+	    nodex.reserve(no_nodes);
 
         memcpy(&nodex[0],&_node_vec[0],no_nodes*sizeof(node));
     }
@@ -208,7 +208,7 @@ struct node_vec{
     }
 
 //--Output operator---------------------------------
-    friend ostream& operator<<(ostream& out, node_vec &_node_vec){
+    friend ostream& operator<<(ostream& out, const node_vec &_node_vec){
         int nodeSize(_node_vec.nodex.size());
 
         for(int iNode=0;iNode<nodeSize;++iNode){
@@ -224,19 +224,21 @@ struct node_vec{
 struct faces{
     
     vector<element> eleVec;
-    double no_material;
+    int no_elements;
+    int no_material;
 
 //--Constructor------------------------------------
-    faces(vector<element>& _eleVec, double _no_material=0):
+    faces(const vector<element>& _eleVec, int _no_material=0):
         no_material(_no_material){
 
-        int noEle(_eleVec.size());
+        no_elements=_eleVec.size();
+        eleVec.reserve(no_elements);
 
-        memcpy(&eleVec[0],&_eleVec[0],noEle*sizeof(element));
+        memcpy(&eleVec[0],&_eleVec[0],no_elements*sizeof(element));
     }
 
 
-//--Input constructor----------------------------
+//--Input constructor from ele file----------------------------
     faces(const char filename[]){
 
         ifstream fin(filename);
@@ -252,9 +254,10 @@ struct faces{
     }
 
 //--Output Operator------------------------------------
-    friend ostream& operator<<(ostream& out, faces &_eleVec){
-        int eleSize(_eleVec.eleVec.size());
+    friend ostream& operator<<(ostream& out, const faces &_eleVec){
 
+        int eleSize(_eleVec.no_elements);
+        cout<<"\nFaces size: "<<eleSize;
         for(int iEle=0;iEle<eleSize;++iEle){
             out<<_eleVec.eleVec[iEle];
         }

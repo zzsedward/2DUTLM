@@ -30,7 +30,7 @@ class mesh_edge{
 
 void read_from_gmsh(const char filename[],
                     vector<node> &node_input,
-                    vector<element>  &face_input){
+                    vector<element> &face_input){
     cout<<"\nRead Data from gmsh file."<<endl;
     ifstream read_data(filename);
 
@@ -85,24 +85,25 @@ void read_from_gmsh(const char filename[],
         if(input_line=="$Nodes"){
             
             getline(read_data,input_line);
-            double node_size;
+            int node_size;
             istringstream read_node(input_line);
             read_node>>node_size;
-            cout<<"\nNode Size: "<<node_size;
-            
+            //cout<<"\nNode Size: "<<node_size;
+            node_input.reserve(node_size);
+
             for(int iNode=0;iNode<node_size;++iNode){
                 getline(read_data,input_line);
                 double node_x,node_y;
-		int node_index;
+		        int node_index;
 
                 stringstream node_coord(input_line);
                 node_coord>>node_index>>node_x>>node_y;
 
-                cout<<"\nNode Read -- ID: "<<node_index<<"  "<<node_x<<"  "<<node_y<<endl;
+                //cout<<"\nNode Read -- ID: "<<node_index<<"  "<<node_x<<"  "<<node_y<<endl;
 
                 node my_node(node_index,node_x,node_y);
 		
-		node_input.push_back(my_node);
+		        node_input.push_back(my_node);
 		
             }
 
@@ -113,12 +114,46 @@ void read_from_gmsh(const char filename[],
             }
             
             cout<<"\nNode Read End."<<endl;
-	    
-	    cout<<"\nNode vector size: "<<node_input.size();
-	    
-	  //  for(vector<node>::iterator itNode=node_input.begin();itNode!=node_input.end();++itNode){
-	   //	cout<<"\n"<<*itNode;
-	   // } 
+        }
+
+        if(input_line=="$Elements"){
+            
+            int element_size;
+            getline(read_data,input_line);
+            stringstream read_element(input_line);
+            read_element>>element_size;
+            cout<<"\nElement Size: " <<element_size;
+
+            face_input.reserve(element_size);
+            
+            for(int iEle=0;iEle<element_size;++iEle){
+                getline(read_data,input_line);
+                //cout<<"\nInput line: "<<input_line;
+                int ele_index,ele_type,no_tags,physical_entity,elementary_entity;
+                int ele_vertex0,ele_vertex1,ele_vertex2;
+
+                istringstream ele_input(input_line);
+                ele_input>>ele_index>>ele_type>>no_tags>>physical_entity>>elementary_entity>>ele_vertex0>>ele_vertex1>>ele_vertex2;
+                
+                //cout<<"\nElement Read: "<<ele_index<<"  "<<ele_type<<"  "<<no_tags<<"  "<<physical_entity<<"  ";
+                //cout<<elementary_entity<<"  "<<ele_vertex0<<"  "<<ele_vertex1<<"  "<<ele_vertex2<<endl;
+                
+                element my_element(ele_index,ele_vertex0,ele_vertex1,ele_vertex2);
+                
+                my_element.set_face_number(physical_entity);
+
+                face_input.push_back(my_element);
+
+                //cout<<"\nElements: "<<face_input[iEle];
+            }
+
+            getline(read_data,input_line);
+            if(input_line!="$EndElements"){
+                cout<<"\nElement reading not Finish!"<<endl;
+                cout<<input_line<<endl;
+            }
+            
+            cout<<"\nElement Read End."<<endl;
         }
 
     }
