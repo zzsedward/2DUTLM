@@ -89,7 +89,7 @@ void read_from_gmsh(const char filename[],
             istringstream read_node(input_line);
             read_node>>node_size;
             //cout<<"\nNode Size: "<<node_size;
-            node_input.reserve(node_size);
+            //node_input.reserve(node_size);
 
             for(int iNode=0;iNode<node_size;++iNode){
                 getline(read_data,input_line);
@@ -124,7 +124,7 @@ void read_from_gmsh(const char filename[],
             read_element>>element_size;
             cout<<"\nElement Size: " <<element_size;
 
-            face_input.reserve(element_size);
+            //face_input.reserve(element_size);
             
             for(int iEle=0;iEle<element_size;++iEle){
                 getline(read_data,input_line);

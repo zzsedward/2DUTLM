@@ -209,7 +209,7 @@ struct node_vec{
 
 //--Output operator---------------------------------
     friend ostream& operator<<(ostream& out, const node_vec &_node_vec){
-        int nodeSize(_node_vec.nodex.size());
+        int nodeSize(_node_vec.no_nodes);
 
         for(int iNode=0;iNode<nodeSize;++iNode){
             out<<_node_vec.nodex[iNode];
@@ -257,7 +257,7 @@ struct faces{
     friend ostream& operator<<(ostream& out, const faces &_eleVec){
 
         int eleSize(_eleVec.no_elements);
-        cout<<"\nFaces size: "<<eleSize;
+        //cout<<"\nFaces size: "<<eleSize;
         for(int iEle=0;iEle<eleSize;++iEle){
             out<<_eleVec.eleVec[iEle];
         }

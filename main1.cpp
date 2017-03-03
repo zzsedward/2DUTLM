@@ -14,11 +14,11 @@ int main(){
 	read_from_gmsh("ex4.msh",read_nodes,read_faces);
 
 	node_vec mNodes(read_nodes);
-	cout<<"\nNodes: "<<endl<<mNodes;
+	cout<<"\nNodes: "<<mNodes;
 
 	faces mFaces(read_faces);
-	cout<<"\nface size： "<<mFaces.no_elements;
-	cout<<"\nFaces: "<<endl<<mFaces;
+	//cout<<"\nface size： "<<mFaces.no_elements;
+	cout<<"\nFaces: "<<mFaces<<endl<<endl;
 	
 	return 0;
 }
