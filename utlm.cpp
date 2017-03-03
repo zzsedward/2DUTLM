@@ -39,15 +39,11 @@ void read_from_gmsh(const char filename[],
     string input_line;
 
     while(getline(read_data,input_line)){
-       //cout<<"\nFile Open"<<endl; 
-<<<<<<< HEAD
-	cout<<"\n"<<input_line<<endl;
-        if(input_line=="$MeshFormat\r"){
-=======
+       //cout<<"\nFile Open"<<endl;
        //cout<<"\nInput: "<<input_line;
         
 	if(input_line=="$MeshFormat"){
->>>>>>> master
+
             cout<<"\nMesh Format read"<<endl;
 
             getline(read_data,input_line);
@@ -119,17 +115,11 @@ void read_from_gmsh(const char filename[],
             
             cout<<"\nNode Read End."<<endl;
 	    
-	    cout<<"\nNode vector size: "<<node_input.size();
-	    
-<<<<<<< HEAD
-	    for(vector<node>::iterator itNode=node_input.begin();itNode!=node_input.end();++itNode){
-		cout<<"\n"<<*itNode<<endl;
-	    } 
-=======
+	    cout<<"\nNode vector size: "<<node_input.size()<<endl;
+
 	  //  for(vector<node>::iterator itNode=node_input.begin();itNode!=node_input.end();++itNode){
 	   //	cout<<"\n"<<*itNode;
-	   // } 
->>>>>>> master
+	   // }
         }
 
     }
