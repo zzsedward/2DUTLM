@@ -112,7 +112,7 @@ struct element{
             memcpy(ele_vet,_element.ele_vet,3*sizeof(int));
     }
 
-//--Set face number -----------------------------------
+    //--Set face number -----------------------------------
     void set_face_number(const int face_number){
         fnum=face_number;
     }
@@ -121,7 +121,7 @@ struct element{
         return(fnum);
     }
 
-//--Set material properties----------------------------
+    //--Set material properties----------------------------
     void set_material(
         const double &_epr,
         const double &_mur){
@@ -129,12 +129,12 @@ struct element{
             mur=_mur;
     }
 
-//--Get relative epsilon -----------------------
+    //--Get relative epsilon -----------------------
     double get_epsilonr() const {
         return(epr);
     }
 
-//--Set Z0 ------------------------------------
+    //--Set Z0 ------------------------------------
     void set_Z0(const double &_Z0){
         Z0=_Z0;
     }
@@ -144,7 +144,7 @@ struct element{
     }
 
 
-//--Input constructors---------------------------------
+    //--Input constructors---------------------------------
     element(const char filename[]){
         ifstream fin(filename);
         fin>>ele_id>>ele_vet[0]>>ele_vet[1]>>ele_vet[2]>>ele_attri;
@@ -192,7 +192,7 @@ struct node_vec{
         memcpy(&nodex[0],&_node_vec[0],no_nodes*sizeof(node));
     }
 
-//--Input constructors----------------------------
+    //--Input constructors----------------------------
     node_vec(const char filename[]){
 
         ifstream fin(filename);
@@ -207,7 +207,7 @@ struct node_vec{
         }
     }
 
-//--Output operator---------------------------------
+    //--Output operator---------------------------------
     friend ostream& operator<<(ostream& out, const node_vec &_node_vec){
         int nodeSize(_node_vec.no_nodes);
 
@@ -227,7 +227,7 @@ struct faces{
     int no_elements;
     int no_material;
 
-//--Constructor------------------------------------
+    //--Constructor------------------------------------
     faces(const vector<element>& _eleVec, int _no_material=0):
         no_material(_no_material){
 
@@ -237,8 +237,7 @@ struct faces{
         memcpy(&eleVec[0],&_eleVec[0],no_elements*sizeof(element));
     }
 
-
-//--Input constructor from ele file----------------------------
+    //--Input constructor from ele file----------------------------
     faces(const char filename[]){
 
         ifstream fin(filename);
@@ -246,14 +245,14 @@ struct faces{
         int v1,v2,v3;
         fin>>eleSize>>eleDim>>eleAttri;
 
-        for(int iEle=0;iEle<eleSize;++iEle){
+            for(int iEle=0;iEle<eleSize;++iEle){
             fin>>eleId>>v1>>v2>>v3>>eleAttri;
             element eleTemp(eleId,v1,v2,v3,eleAttri);
             eleVec.push_back(eleTemp);
         }
     }
 
-//--Output Operator------------------------------------
+    //--Output Operator------------------------------------
     friend ostream& operator<<(ostream& out, const faces &_eleVec){
 
         int eleSize(_eleVec.no_elements);
@@ -264,12 +263,12 @@ struct faces{
         return(out);
     }
 
-//--Get vector size------------------------------
+    //--Get vector size------------------------------
     int get_no_face() const{
         return (eleVec.size());
     }
 
-//--Set Z0 ---------------------
+    //--Set Z0 ---------------------
     void set_impedance(const int &face_id,
                        const int &_Z0){
         const int no_face(eleVec.size());
@@ -283,7 +282,7 @@ struct faces{
         return(eleVec[face_id].get_Z0());
     }
 
-//--Set face numbers-----------------------------
+    //--Set face numbers-----------------------------
     void faces_face_number(const vector<int> face_id,
                             const int face_number){
          
@@ -294,12 +293,12 @@ struct faces{
          }
     }
 
-//--Get face number with id------------------
+    //--Get face number with id------------------
     int get_fnum_with_id(const int &face_id) const{
         return(eleVec[face_id].get_fnum());
     }
 
-//--get no of material-----------------------------
+    //--get no of material-----------------------------
     int find_no_material() const{
         const int no_faces(eleVec.size());
         int max_fnum(1);
@@ -314,11 +313,10 @@ struct faces{
         return(max_fnum);
     }
 
-//--get relative epsilon-----------------------
+    //--get relative epsilon-----------------------
     double get_epsilonr_with_id(const int& face_id) const{
         return(eleVec[face_id].get_epsilonr());
     }
-
 
 };
 
@@ -442,7 +440,7 @@ void read_from_gmsh(const char filename[],
 		    vector<node> &node_input,
 		    vector<element> &face_input);
 
-void creat_half_edge(const node_vec &mnode,
+void create_half_edge(const node_vec &mnode,
                      const faces &mface,
                      vector<edge> &edge_vec,
                      vector<int> &mesh_boundary);

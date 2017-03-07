@@ -31,6 +31,7 @@ class mesh_edge{
 void read_from_gmsh(const char filename[],
                     vector<node> &node_input,
                     vector<element> &face_input){
+
     cout<<"\nRead Data from gmsh file."<<endl;
     ifstream read_data(filename);
 
@@ -42,7 +43,7 @@ void read_from_gmsh(const char filename[],
        //cout<<"\nFile Open"<<endl; 
        //cout<<"\nInput: "<<input_line;
         
-	if(input_line=="$MeshFormat"){
+        if(input_line=="$MeshFormat"){
             cout<<"\nMesh Format read"<<endl;
 
             getline(read_data,input_line);
@@ -54,7 +55,7 @@ void read_from_gmsh(const char filename[],
             cout<<"   file_type: "<<file_type;
             cout<<"   data_size: "<<data_size; 
             cout<<"\nMesh Format read finish.";
-       }
+        }
 
         if(input_line=="$PhysicalNames"){
             cout<<"\nRead Face Property Number.";
@@ -94,7 +95,7 @@ void read_from_gmsh(const char filename[],
             for(int iNode=0;iNode<node_size;++iNode){
                 getline(read_data,input_line);
                 double node_x,node_y;
-		        int node_index;
+                int node_index;
 
                 stringstream node_coord(input_line);
                 node_coord>>node_index>>node_x>>node_y;
@@ -102,9 +103,9 @@ void read_from_gmsh(const char filename[],
                 //cout<<"\nNode Read -- ID: "<<node_index<<"  "<<node_x<<"  "<<node_y<<endl;
 
                 node my_node(node_index,node_x,node_y);
-		
-		        node_input.push_back(my_node);
-		
+
+                node_input.push_back(my_node);
+
             }
 
             getline(read_data,input_line);
@@ -155,11 +156,10 @@ void read_from_gmsh(const char filename[],
             
             cout<<"\nElement Read End."<<endl;
         }
-
     }
 }
 
-void creat_half_edge(const node_vec &mnode,
+void create_half_edge(const node_vec &mnode,
                      const faces &mface,
                      vector<edge> &edge_vec,
                      vector<int> &mesh_boundary){
@@ -175,13 +175,14 @@ void creat_half_edge(const node_vec &mnode,
         for(int inEpf=0;inEpf<nEpf;++inEpf){
             
             int v2((inEpf+1)%nEpf);
+            //vertex index starts from 0
             int startVet(mface.eleVec[inF].ele_vet[inEpf]-1);
             int endVet(mface.eleVec[inF].ele_vet[v2]-1);
             
             int edgeIndex(inF*nEpf+inEpf);
 
     //------------------Find faceId--and vertice index for each edge----
-            edge_vec[edgeIndex].faceId=inF;
+            edge_vec[edgeIndex].faceId=inF;   //starts from zero
             edge_vec[edgeIndex].edgeVet[0]=startVet;
             edge_vec[edgeIndex].edgeVet[1]=endVet;
             
@@ -221,7 +222,7 @@ void creat_half_edge(const node_vec &mnode,
 
             //cout<<"\nFACE: "<<inF+1<<"     CCM: "<<edge_vec[edgeIndex].ccm[0]<<"    "<<edge_vec[edgeIndex].ccm[1];
             
-    //------------------Find Edge Length --------------
+            //------------------Find Edge Length --------------
             double Ledge(sqrt((ax-bx)*(ax-bx)+(ay-by)*(ay-by)));
             edge_vec[edgeIndex].edgeLength=Ledge;
             
@@ -231,12 +232,16 @@ void creat_half_edge(const node_vec &mnode,
             edge_vec[edgeIndex].midpoint[1]=mpy;
         }    
     }
-        map<int,int> _mesh_boundary;
+
+    map<int,int> _mesh_boundary;
     for(int iHe=0;iHe<no_edges;++iHe){
-    //--------------Create boundary mesh index vector--------
+        
+        //--------------Create boundary mesh index vector--------
         
         if(edge_vec[iHe].edgeFlip==-1){
+
             double *vertice=new double[2];
+
             vertice=edge_vec[iHe].get_vertice();
 
             _mesh_boundary[vertice[0]]=iHe;
@@ -244,7 +249,7 @@ void creat_half_edge(const node_vec &mnode,
             delete[] vertice;
         }
 
-    //--------------Fill Link Length-------------------------
+        //--------------Fill Link Length-------------------------
         int iFe(edge_vec[iHe].edgeFlip);
         double ccm_iHe_x(edge_vec[iHe].ccm[0]);
         double ccm_iHe_y(edge_vec[iHe].ccm[1]);
@@ -282,7 +287,6 @@ void creat_half_edge(const node_vec &mnode,
         mesh_boundary.push_back(it->second);
         cout<<"\nBoundary index: "<<mesh_boundary.at(it->first);
     }
-
             
 }
 
@@ -295,6 +299,7 @@ void min_edge_link_length(const vector<edge> &edge_vec,
     int shortestId(0);
 
     for(int it=0;it<edge_vec.size();++it){
+
         if(edge_vec[it].linkLength<_minLink){
             _minLink=edge_vec[it].linkLength;
             shortestId=it;
@@ -316,7 +321,6 @@ void gaussian_wave_excite(const double &width,
      Efield=4/(width*constants::get_c0()*sqrt(constants::get_pi()))*exp(-gamma*gamma);
 
 }
-
 
 void calAdmittance( const double &dt,
                     faces &mface,
@@ -342,7 +346,7 @@ void calAdmittance( const double &dt,
         const double epsilonr(mface.get_epsilonr_with_id(i));
 
         for (int j=0;j<no_edge_pF;++j){
-            const int iHe(i*3.0+j);
+            const int iHe(i*3+j);
             double edge_length(edge_vector[iHe].edgeLength);
             double link_length(edge_vector[iHe].linkLength);
 
@@ -505,6 +509,7 @@ void scatter(const int &time_step,
              vector<edge> &my_edges,                   
              faces &my_faces,
              vector<int> &mesh_boundary){
+
     const int no_edge(my_edges.size());
     const int no_face(my_faces.get_no_face());
     const int no_edge_per_face(3);
