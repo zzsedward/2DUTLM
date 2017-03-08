@@ -20,7 +20,6 @@ int main(){
 
 	double times(0.),min_link(0.),min_edge(0.);
 	double E_field(0.);
-	double delay(1.);
 
 	vector<edge> edgeVector;
 
@@ -41,5 +40,29 @@ int main(){
 
 	calAdmittance(dt,mFaces,edgeVector);
 
+	//set material properties - cylindrical resonator - everywhere air
+	vector<double> mu_r,epsilon_r;
+	mu_r.push_back(1.0);
+	epsilon_r.push_back(1.0);
 
+	set_material_property(mFaces,epsilon_r,mu_r);
+
+	//create mesh body index list  -  remove the filp edge index 
+	list<int> mesh_body_list;
+	create_mesh_body_vector(edgeVector,mesh_body_list);
+
+	//Set reflection coefficients for boundary edges--------------------
+	//---in this case short circuit r=-1-----------------------
+	vector<double> bound_condition;
+	bound_condition.reserve(boundaryVector.size());
+	memset(&bound_condition[0],-1.0,sizeof(double)*bondaryVector.size());
+
+	vector<double> reflection_coeff,Y_boundary;
+
+	create_reflection_coeff(edgeVector,boundaryVector,mFaces,reflection_coeff,Y_boundary,bound_condition);	
+
+	double width(2.5*min_edge*10/constants::get_c0());
+	double delay(1.);
+
+	
 }
