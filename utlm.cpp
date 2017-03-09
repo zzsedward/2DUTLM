@@ -279,7 +279,7 @@ void create_half_edge(const node_vec &mnode,
 
     }
 
-    cout<<endl<<_mesh_boundary.size();
+    cout<<endl<<"Mesh boundary size: "<<_mesh_boundary.size();
 
     for(map<int,int>::iterator it=_mesh_boundary.begin();it!=_mesh_boundary.end();++it){
             //cout<<"\nvertice index: "<<it->first<<"  edge index: "<<it->second;

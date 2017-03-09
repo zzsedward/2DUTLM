@@ -322,7 +322,7 @@ struct faces{
 
 
 struct edge{
-    
+
     int edgeVet[2];
     int faceId;
     int edgeFlip;
@@ -370,6 +370,14 @@ struct edge{
     }
 
     ~edge(){}
+
+    friend ostream& operator<<(ostream &out, const edge &_edge){
+        out<<endl<<_edge.edgeVet[0]<<"  "<<_edge.edgeVet[1];
+        
+        out<<" face ID: "<<_edge.faceId;
+
+        return(out);
+    }
 
     int get_face_id() const{
         return(faceId);
@@ -435,6 +443,38 @@ struct edge{
     }
 
 };
+
+struct EdgeVector{
+
+    vector<edge> edge_vector;
+    
+    //EdgeVector(){cout<<"Empty edge vector"<<endl<<edge_vector.size()<<endl;}
+
+    EdgeVector(const vector<edge> &_edge_vector){
+        const int no_edges(_edge_vector.size());
+
+        edge_vector.reserve(no_edges);
+
+        memcpy(&edge_vector[0],&_edge_vector[0],no_edges*sizeof(edge));
+    }
+
+    friend ostream& operator<<(ostream& out, const EdgeVector &_edge_vector){
+
+        int no_edges(_edge_vector.edge_vector.size());
+        out<<"\nEdge vector size: "<<no_edges<<endl;
+
+        for(int iedge=0;iedge<no_edges;++iedge){
+            out<<_edge_vector.edge_vector[iedge];
+        }
+
+        out<<endl;
+
+        return(out);
+    }
+
+
+};
+
 
 void read_from_gmsh(const char filename[],
 		    vector<node> &node_input,
@@ -507,5 +547,12 @@ void connect(const int &time_step,
 void edge_excite(vector<edge> &mesh_edges, 
                 const vector<int> &source_edge,
                 const double &Vsource);
+
+/*void run(vector<edge> &edge_vector,
+         faces &face_vector,
+         const vector<int> &boundary_id_vector,
+         const vector<int> &pec_boundary
+*/
+
 
 #endif

@@ -34,7 +34,7 @@ int main(){
 
 	min_edge_link_length(edgeVector,min_edge,min_link);
 
-	double dt(min_link*sqrt(2*constants::get_e0*constants::get_u0())/1.4);
+	double dt(min_link*sqrt(2.0*constants::get_e0()*constants::get_u0())/1.4);
 
 	cout<<"\nTime Step: "<<dt<<endl;
 
@@ -55,12 +55,13 @@ int main(){
 	//---in this case short circuit r=-1-----------------------
 	vector<double> bound_condition;
 	bound_condition.reserve(boundaryVector.size());
-	memset(&bound_condition[0],-1.0,sizeof(double)*bondaryVector.size());
+	memset(&bound_condition[0],-1.0,sizeof(double)*boundaryVector.size());
 
 	vector<double> reflection_coeff,Y_boundary;
 
 	create_reflection_coeff(edgeVector,boundaryVector,mFaces,reflection_coeff,Y_boundary,bound_condition);	
 
+	//Set excitation wave ---------------------------------------
 	double width(2.5*min_edge*10/constants::get_c0());
 	double delay(1.);
 
