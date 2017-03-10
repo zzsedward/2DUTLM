@@ -550,11 +550,15 @@ void edge_excite(vector<edge> &mesh_edges,
                 const vector<int> &source_edge,
                 const double &Vsource);
 
-/*void run(vector<edge> &edge_vector,
-         faces &face_vector,
+void run(vector<edge> &edge_vector,
+         const faces &face_vector,
          const vector<int> &boundary_id_vector,
-         const vector<int> &pec_boundary
-*/
+         const vector<int> &pec_boundary,
+         const vector<int> &mesh_body,
+         const vector<double> &mesh_reflection_coefficient,
+         const vector<double> &mesh_Y_boundary,
+         const int &number_time_step); 
+        
 
 
 #endif

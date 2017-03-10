@@ -59,7 +59,7 @@ int main(){
 	//Set reflection coefficients for boundary edges--------------------
 	//---in this case short circuit r=-1-----------------------
 	vector<double> bound_condition;
-	bound_condition.reserve(boundaryVector.size());
+	bound_condition.resize(boundaryVector.size());
 	memset(&bound_condition[0],-1.0,sizeof(double)*boundaryVector.size());
 
 	vector<double> reflection_coeff,Y_boundary;

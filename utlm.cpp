@@ -335,7 +335,7 @@ void gaussian_wave_excite(const double &width,
                         double &Efield){
     
      const double t0(delay*width);
-     double gamma(4*(t-t0)/(width));
+     double gamma(4.0*(t-t0)/(width));
      Efield=4/(width*constants::get_c0()*sqrt(constants::get_pi()))*exp(-gamma*gamma);
 
 }
@@ -603,6 +603,17 @@ void connect(const int &time_step,
     const int no_face(my_faces.get_no_face());
     const int no_bound_edge(my_bound_edges.size());
     
+    if(no_edge==0) {
+        cout<<"\nEdge vector fails to send.";
+        return;
+    }
+    if(no_face==0){
+        cout<<"\nFace vector fails to send.";
+        return;
+    }
+    if(no_bound_edge==0){
+        cout<<"\nBoundary edge id vector fails to send."
+    }
 
     vector<double> Efield;
     Efield.reserve(no_edge);
@@ -719,5 +730,24 @@ void edge_excite(vector<edge> &mesh_edges,
         const double stub_voltage(mesh_edges[source_edge_index].get_Vstub());
         mesh_edges[source_edge_index].set_Vlinki(link_voltage_incident+Vsource/Ytotal);
         mesh_edges[source_edge_index].set_Vstub(stub_voltage+Vsource/Ytotal);
+    }
+}
+
+void run(vector<edge> &edge_vector,
+         const faces &face_vector,
+         const vector<int> &boundary_id_vector,
+         const vector<int> &pec_boundary,
+         const vector<int> &mesh_body,
+         const vector<double> &mesh_reflection_coefficient,
+         const vector<double> &mesh_Y_boundary,
+         const int &number_time_step,
+         const double &dt){
+
+    for(int k=0;k<number_time_step;++k){
+        scatter(k,edge_vector,face_vector,mesh_boundary);
+        connect(k,edge_vector,face_vector,boundary_id_vector,pec_boundary,mesh_body,mesh_reflection_coefficient,mesh_Y_boundary);
+
+        
+
     }
 }
