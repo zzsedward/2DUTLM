@@ -451,10 +451,12 @@ struct EdgeVector{
     //EdgeVector(){cout<<"Empty edge vector"<<endl<<edge_vector.size()<<endl;}
 
     EdgeVector(const vector<edge> &_edge_vector){
+
+        cout<<"\nedge vector create."<<endl;
         const int no_edges(_edge_vector.size());
-
-        edge_vector.reserve(no_edges);
-
+        //cout<<"\nnumber of edges: "<<no_edges;
+        edge_vector.resize(no_edges);
+        
         memcpy(&edge_vector[0],&_edge_vector[0],no_edges*sizeof(edge));
     }
 

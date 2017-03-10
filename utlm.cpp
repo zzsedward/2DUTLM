@@ -163,9 +163,21 @@ void create_half_edge(const node_vec &mnode,
                      const faces &mface,
                      vector<edge> &edge_vec,
                      vector<int> &mesh_boundary){
+    cout<<"\nCreate edge vector from input Nodes and Faces"<<endl;
+    
+    if(mface.no_elements==0){
+        cout<<"\nFace vector read fail."<<endl;
+        return;
+    }
+
+    if(mnode.no_nodes==0){
+        cout<<"\nNode vector read fail."<<endl;
+        return;
+    }
+
     const int nEpf(3);
-    const int no_faces(mface.eleVec.size());
-    const int no_vet(mnode.nodex.size());
+    const int no_faces(mface.no_elements);
+    const int no_vet(mnode.no_nodes);
     const int no_edges(no_faces*nEpf);
 
     edge_vec.resize(no_edges);
@@ -180,12 +192,14 @@ void create_half_edge(const node_vec &mnode,
             int endVet(mface.eleVec[inF].ele_vet[v2]-1);
             
             int edgeIndex(inF*nEpf+inEpf);
-
+            //cout<<"\nEdge ID: "<<edgeIndex;
     //------------------Find faceId--and vertice index for each edge----
             edge_vec[edgeIndex].faceId=inF;   //starts from zero
             edge_vec[edgeIndex].edgeVet[0]=startVet;
             edge_vec[edgeIndex].edgeVet[1]=endVet;
             
+            //cout<<"\nEdge vertex: "<<edge_vec[edgeIndex].edgeVet[0]<<"  "<<edge_vec[edgeIndex].edgeVet[0];
+
             int flip_edge_start(endVet);
             int flip_edge_end(startVet);
 
@@ -193,6 +207,8 @@ void create_half_edge(const node_vec &mnode,
             for(int iFe=0;iFe<edgeIndex;++iFe){
 
                 if(edge_vec[iFe].edgeVet[0]==flip_edge_start&&edge_vec[iFe].edgeVet[1]==flip_edge_end){
+
+                    //cout<<"\nEdge Index: "<<edgeIndex;//<<"  Flip ID: "<<iFe;
                     edge_vec[edgeIndex].edgeFlip=iFe;
                     edge_vec[iFe].edgeFlip=edgeIndex;        
                 }
@@ -247,6 +263,8 @@ void create_half_edge(const node_vec &mnode,
             _mesh_boundary[vertice[0]]=iHe;
 
             delete[] vertice;
+
+            //cout<<"\nBound Edge index: "<<iHe;
         }
 
         //--------------Fill Link Length-------------------------
@@ -285,7 +303,7 @@ void create_half_edge(const node_vec &mnode,
             //cout<<"\nvertice index: "<<it->first<<"  edge index: "<<it->second;
 
         mesh_boundary.push_back(it->second);
-        cout<<"\nBoundary index: "<<mesh_boundary.at(it->first);
+        //cout<<"\nBoundary index: "<<mesh_boundary.at(it->first);
     }
             
 }

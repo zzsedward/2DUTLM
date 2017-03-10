@@ -9,14 +9,14 @@ int main(){
 	
 	vector<node> read_nodes;
 	vector<element> read_faces;
-	read_from_gmsh("ex4.msh",read_nodes,read_faces);
+	read_from_gmsh("mesh1.msh",read_nodes,read_faces);
 
 	node_vec mNodes(read_nodes);
-	//cout<<"\nNodes: "<<mNodes;
+	cout<<"\nNodes: "<<mNodes;
 
 	faces mFaces(read_faces);
-	//cout<<"\nface size： "<<mFaces.no_elements;
-	//cout<<"\nFaces: "<<mFaces<<endl<<endl;
+	cout<<"\nface size： "<<mFaces.eleVec.size();
+	cout<<"\nFaces: "<<mFaces<<endl<<endl;
 
 	double times(0.),min_link(0.),min_edge(0.);
 	double E_field(0.);
@@ -26,6 +26,8 @@ int main(){
 	vector<int> boundaryVector;
 
 	create_half_edge(mNodes,mFaces,edgeVector,boundaryVector);
+	EdgeVector edge_vectors(edgeVector);
+	//cout<<edge_vectors;
 
 	for(vector<int>::iterator it=boundaryVector.begin();it!=boundaryVector.end();++it){
 		cout<<"\nBoundary Edge Index: "<<*it;
@@ -50,6 +52,9 @@ int main(){
 	//create mesh body index list  -  remove the filp edge index 
 	list<int> mesh_body_list;
 	create_mesh_body_vector(edgeVector,mesh_body_list);
+	for(list<int>::iterator iii=mesh_body_list.begin();iii!=mesh_body_list.end();++iii){
+		cout<<"\nMesh Body id: "<<*iii;
+	}
 
 	//Set reflection coefficients for boundary edges--------------------
 	//---in this case short circuit r=-1-----------------------

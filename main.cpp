@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
     //cout<<edgeVector[edgeIndex].edgeVet[0];
     vector<int> boundaryVector;
 
-    creat_half_edge(nodeVecMine,eleVecMine,edgeVector,boundaryVector);
+    create_half_edge(nodeVecMine,eleVecMine,edgeVector,boundaryVector);
     
     for(vector<int>::iterator it=boundaryVector.begin();
     
