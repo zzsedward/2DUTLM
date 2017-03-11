@@ -744,7 +744,9 @@ void run(vector<edge> &edge_vector,
          const double &dt){
 
     for(int k=0;k<number_time_step;++k){
+        
         scatter(k,edge_vector,face_vector,mesh_boundary);
+        
         connect(k,edge_vector,face_vector,boundary_id_vector,pec_boundary,mesh_body,mesh_reflection_coefficient,mesh_Y_boundary);
 
         

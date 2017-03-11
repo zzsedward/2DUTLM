@@ -477,6 +477,12 @@ struct EdgeVector{
 
 };
 
+struct gause_wave{
+    double width;
+    double delay;
+    double 
+};
+
 
 void read_from_gmsh(const char filename[],
 		    vector<node> &node_input,
