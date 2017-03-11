@@ -337,7 +337,7 @@ void gaussian_wave_excite(const double &width,
      const double t0(delay*width);
      double gamma(4.0*(t-t0)/(width));
      Efield=4/(width*constants::get_c0()*sqrt(constants::get_pi()))*exp(-gamma*gamma);
-
+          
 }
 
 void calAdmittance( const double &dt,

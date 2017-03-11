@@ -480,6 +480,7 @@ struct EdgeVector{
 struct gause_wave{
     double width;
     double delay;
+    double time;
     double 
 };
 
