@@ -20,6 +20,7 @@ int main(){
 
 	double times(0.),min_link(0.),min_edge(0.);
 	double E_field(0.);
+	int total_time_steps(10);
 
 	vector<edge> edgeVector;
 
@@ -35,6 +36,7 @@ int main(){
 	cout<<endl;
 
 	min_edge_link_length(edgeVector,min_edge,min_link);
+	cout<<"\nminimum link length: "<<min_link;
 
 	double dt(min_link*sqrt(2.0*constants::get_e0()*constants::get_u0())/1.4);
 
@@ -61,14 +63,29 @@ int main(){
 	vector<double> bound_condition;
 	bound_condition.resize(boundaryVector.size());
 	memset(&bound_condition[0],-1.0,sizeof(double)*boundaryVector.size());
-
+						
 	vector<double> reflection_coeff,Y_boundary;
 
 	create_reflection_coeff(edgeVector,boundaryVector,mFaces,reflection_coeff,Y_boundary,bound_condition);	
 
 	//Set excitation wave ---------------------------------------
-	double width(2.5*min_edge*10/constants::get_c0());
+	double width(25*min_edge/constants::get_c0());
 	double delay(1.);
 
-	
+	gause_wave gause_excite(width,delay);
+	cout<<"\nGause speed: "<<gause_excite.wave_speed;
+	cout<<"\nWave direction: "<<gause_excite.direction[0]<<"  "<<gause_excite.direction[1];
+
+	vector<double> Efield_vector_time;
+	vector<double> time_array;
+	for(int itime=0;itime<total_time_steps;++itime){ 	//itime - iteration index for integer total time steps
+		time_array.push_back((double) itime*dt);
+	}
+
+	gause_excite.evaluate(time_array,Efield_vector_time);
+
+	cout<<"\nExcitation field magnitude: "<<endl;
+	for(int istep=0;istep<total_time_steps;++istep){
+		cout<<Efield_vector_time[istep]<<endl;
+	}
 }

@@ -480,8 +480,17 @@ struct EdgeVector{
 struct gause_wave{
     double width;
     double delay;
-    double time;
-    double 
+    double wave_speed;
+    double amplitude;
+    double direction[2];
+
+    gause_wave(double _width=0.0,double _delay=1.0,double _wave_speed=constants::get_c0(),double _amplitude=1.0)
+            :width(_width),delay(_delay),wave_speed(_wave_speed),amplitude(_amplitude){
+                direction[0]=1;
+                direction[1]=0;
+            }
+    
+    void evaluate(const vector<double> &time_array, vector<double> &Vsource_array);
 };
 
 
@@ -541,12 +550,12 @@ void create_reflection_coeff(
 
 void scatter(const int &time_step,
              vector<edge> &edge_vector,
-             faces &my_faces,
-             vector<int> &mesh_boundary);
+             const faces &my_faces,
+             const vector<int> &mesh_boundary);
 
 void connect(const int &time_step,
              vector<edge> &my_edges,
-             faces &my_faces,
+             const faces &my_faces,
              const vector<int> &my_bound_edges,
              const vector<int> &my_pec_bounds,
              const vector<int> &my_inner_edges,
@@ -559,11 +568,13 @@ void edge_excite(vector<edge> &mesh_edges,
 
 void run(vector<edge> &edge_vector,
          const faces &face_vector,
-         const vector<int> &boundary_id_vector,
-         const vector<int> &pec_boundary,
+         const vector<int> &mesh_boundary_edge_id,
+         const vector<int> &mesh_pec_boundary,
          const vector<int> &mesh_body,
+         const vector<int> &mesh_excite_edge_id,
          const vector<double> &mesh_reflection_coefficient,
          const vector<double> &mesh_Y_boundary,
+         const vector<double> &excite_field_td,
          const int &number_time_step); 
         
 

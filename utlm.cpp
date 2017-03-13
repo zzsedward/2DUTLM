@@ -28,6 +28,21 @@ class mesh_edge{
 
 };*/
 
+void gause_wave::evaluate(const vector<double> &time_array, vector<double> &Vsource_array){
+    
+    const int array_size(time_array.size());
+    Vsource_array.reserve(array_size);
+
+    const double t0(delay*width);
+    const double pi(constants::get_pi());
+
+    for(int i=0;i<array_size;++i){
+        double t(time_array[i]);
+        double gamma(4.0*(t-t0)/width);
+        Vsource_array[i]=amplitude*(4.0/(width*wave_speed*sqrt(pi)))*exp(-gamma*gamma);
+    }
+}
+
 void read_from_gmsh(const char filename[],
                     vector<node> &node_input,
                     vector<element> &face_input){
@@ -336,7 +351,7 @@ void gaussian_wave_excite(const double &width,
     
      const double t0(delay*width);
      double gamma(4.0*(t-t0)/(width));
-     Efield=4/(width*constants::get_c0()*sqrt(constants::get_pi()))*exp(-gamma*gamma);
+     Efield=4.0/(width*constants::get_c0()*sqrt(constants::get_pi()))*exp(-gamma*gamma);
           
 }
 
@@ -525,8 +540,8 @@ void create_reflection_coeff(
 
 void scatter(const int &time_step, 
              vector<edge> &my_edges,                   
-             faces &my_faces,
-             vector<int> &mesh_boundary){
+             const faces &my_faces,
+             const vector<int> &mesh_boundary){
 
     const int no_edge(my_edges.size());
     const int no_face(my_faces.get_no_face());
@@ -562,9 +577,10 @@ void scatter(const int &time_step,
     }
 
     //-----open circuit voltage and closed circuit current--
+    double boundary_array_size(mesh_boundary.size()); //size of mesh boundary edge index vector
 
-    for(vector<int>::iterator it=mesh_boundary.begin();it!=mesh_boundary.end();++it){
-        const int edge_id(*it);
+    for(int ibe=0;ibe<boundary_array_size;++ibe){   //ibe - iteration id for mesh boundary edge vector
+        const int edge_id(mesh_boundary[ibe]);
         const int face_id(my_edges[edge_id].get_face_id());
         const double face_epr(my_faces.get_epsilonr_with_id(face_id));
         
@@ -586,12 +602,13 @@ void scatter(const int &time_step,
             openVoltage=closeCurrent/(linkY+stubY);
         }
     }
+   
 }
 
 
 void connect(const int &time_step, 
             vector<edge> &my_edges, 
-            faces &my_faces, 
+            const faces &my_faces, 
             const vector<int> &my_bound_edges, 
             const vector<int> &my_pec_bounds,
             const vector<int> &my_inner_edges,
@@ -612,7 +629,7 @@ void connect(const int &time_step,
         return;
     }
     if(no_bound_edge==0){
-        cout<<"\nBoundary edge id vector fails to send."
+        cout<<"\nBoundary edge id vector fails to send.";
     }
 
     vector<double> Efield;
@@ -685,7 +702,6 @@ void connect(const int &time_step,
         }
         else{
 
-
             const double Ilinkr(my_edges[edge_id].get_Vlinkr()*my_edges[edge_id].get_Ylink());
             const double Ilinkr_flip(my_edges[flip_edge_id].get_Vlinkr()*my_edges[flip_edge_id].get_Ylink());
             const double Istub(my_edges[edge_id].get_Vstub()*my_edges[edge_id].get_Ystub());
@@ -707,14 +723,14 @@ void connect(const int &time_step,
 }
 
 void edge_excite(vector<edge> &mesh_edges, 
-                const vector<int> &source_edge,
+                const vector<int> &mesh_excite_edge_id,
                 const double &Vsource){
 
-    int no_source_edge(source_edge.size());
+    int no_source_edge(mesh_excite_edge_id.size());
 
     for(int sei=0;sei<no_source_edge;++sei){
 
-        int source_edge_index(source_edge[sei]);
+        int source_edge_index(mesh_excite_edge_id[sei]);
 
         int source_edge_flip(mesh_edges[source_edge_index].get_flip_edge());
 
@@ -735,21 +751,22 @@ void edge_excite(vector<edge> &mesh_edges,
 
 void run(vector<edge> &edge_vector,
          const faces &face_vector,
-         const vector<int> &boundary_id_vector,
-         const vector<int> &pec_boundary,
+         const vector<int> &mesh_boundary_edge_id,
+         const vector<int> &mesh_pec_boundary,
          const vector<int> &mesh_body,
+         const vector<int> &mesh_excite_edge_id,
          const vector<double> &mesh_reflection_coefficient,
          const vector<double> &mesh_Y_boundary,
-         const int &number_time_step,
-         const double &dt){
+         const vector<double> &excite_field_td,
+         const int &number_time_step){
 
     for(int k=0;k<number_time_step;++k){
         
-        scatter(k,edge_vector,face_vector,mesh_boundary);
+        scatter(k,edge_vector,face_vector,mesh_boundary_edge_id);
         
-        connect(k,edge_vector,face_vector,boundary_id_vector,pec_boundary,mesh_body,mesh_reflection_coefficient,mesh_Y_boundary);
+        connect(k,edge_vector,face_vector,mesh_boundary_edge_id,mesh_pec_boundary,mesh_body,mesh_reflection_coefficient,mesh_Y_boundary);
 
+        edge_excite(edge_vector,mesh_excite_edge_id,excite_field_td[k]);
         
-
     }
 }
