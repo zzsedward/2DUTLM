@@ -458,6 +458,8 @@ void create_PEC_bound_vector(
 }
 
 void create_mesh_body_vector(
+    //remove edge ids that reverse the vertex id and belongs to the boundary 
+    //(not material boundary) 
     const vector<edge> &my_edges,
     list<int> &mesh_body){
 
@@ -528,7 +530,7 @@ void create_reflection_coeff(
 
             const double Y0(sqrt(constants::get_e0()/constants::get_u0()));
 
-            Y_boundary[edge_id]=Y0*(sqrt(epr*my_edges[edge_id].get_edge_length()));
+            Y_boundary[edge_id]=Y0*(sqrt(epr)*my_edges[edge_id].get_edge_length());
         }
         else
         {
@@ -555,22 +557,33 @@ void scatter(const int &time_step,
     nodeVoltage.reserve(no_face);
 	memset(&nodeVoltage[0],0,sizeof(double)*no_face);
 
+    //-------------------------------------------------------------------
+    //Node Voltage at the centre of the triangle-----
+    //------V_node = 2.0*I_node*Z0_face (from my_faces_-----------------
+    //------I_node = Sum(Vlink_i*Ylink) for each port of the node
+    //-------------------------------------------------------------------
     for(int kface=0;kface<no_face;++kface){
+        if(nodeCurrent[kface]!=0){
+            cout<<"\nError - Node Current node initialised as 0.";
+            return;
+        }
 
         for(int iepf=0;iepf<3;++iepf){
             const int edge_id(kface*3.0+iepf);
             nodeCurrent[kface]+=my_edges[edge_id].calc_Vlinki_times_Ylink();
         }
         
-        nodeCurrent[kface]*=2.0;
+        //nodeCurrent[kface]*=2.0;
 
         if(my_faces.get_epsilonr_with_id(kface)>1e8){
             nodeVoltage[kface]=0.0;
         }
         else{
-            nodeVoltage[kface]=nodeCurrent[kface]*my_faces.get_Z0_with_id(kface);
+            nodeVoltage[kface]=2.0*nodeCurrent[kface]*my_faces.get_Z0_with_id(kface);
         }
 
+        //----reflected voltage for each port(edge)
+        //----Vlinkr=V_node - Vlinki per edge
         my_edges[kface*3.0].set_Vlinkr(nodeVoltage[kface]-my_edges[kface*3].get_Vlinki());
         my_edges[kface*3+1].set_Vlinkr(nodeVoltage[kface]-my_edges[kface*3+1].get_Vlinki());
         my_edges[kface*3+2].set_Vlinkr(nodeVoltage[kface]-my_edges[kface*3.0+2].get_Vlinki());
@@ -605,7 +618,6 @@ void scatter(const int &time_step,
    
 }
 
-
 void connect(const int &time_step, 
             vector<edge> &my_edges, 
             const faces &my_faces, 
@@ -630,6 +642,7 @@ void connect(const int &time_step,
     }
     if(no_bound_edge==0){
         cout<<"\nBoundary edge id vector fails to send.";
+        return;
     }
 
     vector<double> Efield;
@@ -637,6 +650,7 @@ void connect(const int &time_step,
     vector<double> Hfield;
     Hfield.reserve(no_edge);
 
+    //connection at boundary edges ----------------------------------------------
     for(int it_bound_edge=0;it_bound_edge<no_bound_edge;++it_bound_edge){
 
         const int edge_id(my_bound_edges[it_bound_edge]);
@@ -652,25 +666,50 @@ void connect(const int &time_step,
         const double ylink(my_edges[edge_id].get_Ylink());
         const double ystub(my_edges[edge_id].get_Ystub());
 
-        const double node_current(2*(vlinkr*ylink+vstub*ystub));
+        const double port_current(2.0*(vlinkr*ylink+vstub*ystub));
 
         if(reflection_coeff==0){
-            
+            //-----reflection coefficient zero => matched boundary admittance--
+            //Ytotal=Ylink+Ystub+Yboundary---------------------------
             const double total_admit(ylink+ystub+my_y_boundary[edge_id]);
 
-            const double node_voltage(node_current/total_admit);
+            const double port_voltage(port_current/total_admit);
 
-            my_edges[edge_id].set_Vlinki(node_voltage-vlinkr);
+            my_edges[edge_id].set_Vlinki(port_voltage-vlinkr);
+            my_edges[edge_id].set_Vstub(port_voltage-vstub);
         }
         else{
-
+            //speficied boundary condition or PEC(short circuit)
+            //when PEC, refl_coeff=-1, simply reflect
             const double total_admit(ylink+ystub);
 
-            const double node_voltage(node_current/total_admit);
+            const double port_voltage(port_current/total_admit);
 
-            my_edges[edge_id].set_Vlinki(node_voltage-vlinkr);
+            my_edges[edge_id].set_Vlinki(vlinkr*reflection_coeff);
+            my_edges[edge_id].set_Vstub(vstub*reflection_coeff);
         }
 
+    }
+
+    //------PEC boundary connection process--------------
+    if(my_pec_bounds.size()!=0){
+        //pec boundary -> simply reflect
+        cout<<"\nPEC Boundary connect";
+        const int pec_bound_size(my_pec_bounds.size());
+        for(int i=0;i<pec_bound_size;++i){
+
+            int edge_id(my_pec_bounds[i]);
+            const double v_linkr(my_edges[edge_id].get_Vlinkr());
+            const double v_stub(my_edges[edge_id].get_Vstub());
+            const double Ylink(my_edges[edge_id].get_Ylink());
+            const double Ystub(my_edges[edge_id].get_Ystub());
+
+            const double Iconnect(2.0*(v_linkr*Ylink+v_stub*Ystub));
+            const double Ytotal(Ylink+Ystub);
+
+            my_edges[edge_id].set_Vlinki(-1.0*v_linkr);
+            my_edges[edge_id].set_Vstub(-1.0*v_stub);
+        }
     }
 
     const int no_inner_edge(my_inner_edges.size());
@@ -693,7 +732,7 @@ void connect(const int &time_step,
         const double flip_Vstub(my_edges[flip_edge_id].get_Vstub());
 
         if(cur_face_epr>1e8||flip_face_epr>1e8){
-
+            //---PEC nodes----------------------------
             my_edges[edge_id].set_Vlinki(0.0);
             my_edges[edge_id].set_Vstub(0.0);
             my_edges[flip_edge_id].set_Vlinkr(0.0);
@@ -707,7 +746,7 @@ void connect(const int &time_step,
             const double Istub(my_edges[edge_id].get_Vstub()*my_edges[edge_id].get_Ystub());
             const double Istub_flip(my_edges[flip_edge_id].get_Vstub()*my_edges[flip_edge_id].get_Ystub());
 
-            const double Iconnect(2*(Ilinkr+Ilinkr_flip+Istub+Istub_flip));
+            const double Iconnect(2.0*(Ilinkr+Ilinkr_flip+Istub+Istub_flip));
             const double Ylink(my_edges[edge_id].get_Ylink()+my_edges[flip_edge_id].get_Ylink());
             const double Ystub(my_edges[edge_id].get_Ystub()+my_edges[flip_edge_id].get_Ystub());
             const double Ytotal(Ylink+Ystub);
@@ -728,7 +767,7 @@ void edge_excite(vector<edge> &mesh_edges,
 
     int no_source_edge(mesh_excite_edge_id.size());
 
-    for(int sei=0;sei<no_source_edge;++sei){
+    for(int sei=0;sei<no_source_edge;++sei){    //source edge id vector
 
         int source_edge_index(mesh_excite_edge_id[sei]);
 
